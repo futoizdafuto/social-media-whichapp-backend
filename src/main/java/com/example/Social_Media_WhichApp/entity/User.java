@@ -29,6 +29,10 @@ public class User {
 
     }
 
+    public User(Long id) {
+        this.id = id;
+    }
+
     public User(Long id, String user_name, String email, String password, String avatar_url, String last_name, String first_name) {
         this.id = id;
         this.user_name = user_name;

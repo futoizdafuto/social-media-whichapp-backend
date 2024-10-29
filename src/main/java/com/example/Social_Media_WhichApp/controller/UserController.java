@@ -31,15 +31,15 @@ public class UserController {
         return userService.createUser(user);
     }
 
-    // API xóa người dùng theo ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
-        if (userRepository.existsById(id)) {
-            userRepository.deleteById(id);
-            return ResponseEntity.ok("User deleted successfully.");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
-        }
-    }
+//    // API xóa người dùng theo ID
+//    @DeleteMapping("/{id}")
+//    public ResponseEntity<String> deleteUser(@PathVariable Long id) {
+//        if (userRepository.existsById(id)) {
+//            userRepository.deleteById(id);
+//            return ResponseEntity.ok("User deleted successfully.");
+//        } else {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found.");
+//        }
+//    }
 
 }
