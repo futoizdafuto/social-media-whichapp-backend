@@ -2,8 +2,8 @@ package com.example.Social_Media_WhichApp.entity;
 
 
 import jakarta.persistence.*;
-import jakarta.persistence.Column;
 
+import java.util.List;
 
 @Entity
 @Table(name = "user")
@@ -11,32 +11,43 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
-    private String user_name;
-    private String email;
-    private String password;
+    private Long user_id;
 
     @Column(length = 500)
     private String avatar_url;
 
-    private String last_name;
-    private String first_name;
+    private String username;
+    private String password;
+    private String email;
+    private String name;
 
-
+    // 1 user có thể có nhiều bài viết
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Post> posts;
 
     public User() {
-
     }
 
-    public User(Long id, String user_name, String email, String password, String avatar_url, String last_name, String first_name) {
-        this.id = id;
-        this.user_name = user_name;
-        this.email = email;
-        this.password = password;
+    public User(Long id) {
+        this.user_id = id;
+    }
+
+    public User(Long id, String avatar_url, String username, String password, String email, String name, List<Post> posts) {
+        this.user_id = id;
         this.avatar_url = avatar_url;
-        this.last_name = last_name;
-        this.first_name = first_name;
+        this.username = username;
+        this.password = password;
+        this.email = email;
+        this.name = name;
+        this.posts = posts;
+    }
+
+    public Long getUser_id() {
+        return user_id;
+    }
+
+    public void setUser_id(Long id) {
+        this.user_id = id;
     }
 
     public String getAvatar_url() {
@@ -47,51 +58,43 @@ public class User {
         this.avatar_url = avatar_url;
     }
 
-    public Long getId() {
-        return id;
+    public String getUsername() {
+        return username;
     }
 
-    public String getUser_name() {
-        return user_name;
-    }
-
-    public String getEmail() {
-        return email;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public String getLast_name() {
-        return last_name;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
-    public String getFirst_name() {
-        return first_name;
-    }
-
-    public void setUser_name(String user_name) {
-        this.user_name = user_name;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
+    public String getEmail() {
+        return email;
     }
 
     public void setEmail(String email) {
         this.email = email;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public String getName() {
+        return name;
     }
 
-    public void setLast_name(String last_name) {
-        this.last_name = last_name;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public void setFirst_name(String first_name) {
-        this.first_name = first_name;
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
     }
 }

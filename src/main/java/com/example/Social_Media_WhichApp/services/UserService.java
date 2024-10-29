@@ -1,5 +1,4 @@
-package com.example.Social_Media_WhichApp.service;
-
+package com.example.Social_Media_WhichApp.services;
 
 import com.example.Social_Media_WhichApp.entity.User;
 import com.example.Social_Media_WhichApp.repository.UserRepository;
@@ -11,7 +10,6 @@ import java.util.List;
 @Service
 public class UserService {
 
-
     private UserRepository userRepository;
 
     @Autowired
@@ -19,12 +17,11 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public List<User> getAllUsers() {
+    public List<User> getAllUser(){
         return userRepository.findAll();
     }
 
-    public User createUser(User user) {
+    public User createUser(User user){
         return userRepository.save(user);
     }
-
 }

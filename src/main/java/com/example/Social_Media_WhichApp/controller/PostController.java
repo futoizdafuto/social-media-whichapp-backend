@@ -1,43 +1,104 @@
 package com.example.Social_Media_WhichApp.controller;
 
+
+import com.example.Social_Media_WhichApp.entity.Media;
 import com.example.Social_Media_WhichApp.entity.Post;
+import com.example.Social_Media_WhichApp.entity.User;
 import com.example.Social_Media_WhichApp.repository.PostRepository;
-import com.example.Social_Media_WhichApp.service.PostService;
+//import com.example.Social_Media_WhichApp.services.FileStorageService;
+import com.example.Social_Media_WhichApp.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/posts")
 public class PostController {
 
+
+    public  String unitSubString;
+
+    @Value("${upload.dir}")
+    private String uploadDir;
+
+
+    public String save_File(MultipartFile file) throws IOException {
+        if(file.isEmpty()){
+            throw new IOException("File ís Emty");
+        }
+        unitSubString = UUID.randomUUID().toString();
+        Path path = Paths.get(uploadDir + unitSubString + "_"+file.getOriginalFilename());
+        Files.copy(file.getInputStream(), path);
+
+        return file.getOriginalFilename();
+    }
+
     @Autowired
-    public PostService postService;
+    private PostService postService;
 
-    @GetMapping
-    public List<Post> getAllPosts() {
-        return postService.getAllPosts();
-    }
-
-    @PostMapping
-    public Post createPost(@RequestBody Post post) {
-        return postService.createPost(post);
-    }
-
+//    @Autowired
+//    private FileStorageService fileStorageService;
     @Autowired
     private PostRepository postRepository;
 
-    // API xóa bài viết theo ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deletePost(@PathVariable Long id) {
-        if (postRepository.existsById(id)) {
-            postRepository.deleteById(id);
-            return ResponseEntity.ok("Post deleted successfully.");
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found.");
+    @GetMapping
+    public List<Post> getAllPosts(){
+        return postService.getAllPosts();
+    }
+
+    @PostMapping("/upload")
+    public ResponseEntity<Map<String, Object>> uploadPost(
+           @RequestParam Long user_id,
+            @RequestParam List<MultipartFile> files,
+            @RequestParam String content
+    ) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            Post post = new Post();
+            post.setUser(new User(user_id));
+            post.setContent(content);
+            post.setCreated_at(new Date());
+
+
+            List<Media> mediaList = new ArrayList<>();
+
+            for (MultipartFile file : files) {
+                String fileName =  save_File(file);
+                String fileType = fileName.endsWith(".mp4") ? "video" : "image";
+                String fileUrl = "uploads/" + unitSubString+  "_"  + fileName;
+
+                Media media = new Media(fileUrl, fileType , post);
+                mediaList.add(media);
+            }
+            post.setMediaList(mediaList);
+
+            // lưu post vào cơ sở dữ liệu
+            Post savePost = postRepository.save(post);
+            response.put("message", "Post created successfully");
+            response.put("post", savePost);
+            return new ResponseEntity<>(response, HttpStatus.OK);
+        } catch (IOException e) {
+            response.put("error", "Failed to upload post: " + e.getMessage());
+            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
+//    @DeleteMapping("/{id}")
+//    public Re
+
+
+
+
 }

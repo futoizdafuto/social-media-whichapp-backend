@@ -13,18 +13,17 @@ import java.util.Date;
 @Configuration
 public class DataSeeder {
 
-//    @Bean
-//    CommandLineRunner initData(UserRepository userRepository, PostRepository postRepository) {
-//        return args -> {
-//            // Tạo người dùng mẫu
+    @Bean
+    CommandLineRunner initData(UserRepository userRepository, PostRepository postRepository) {
+        return args -> {
+            // Tạo người dùng mẫu
 //            User user1 = new User();
-//            user1.setFirst_name("Nguyen Van A");
-//            user1.setEmail("a@example.com");
+//            user1.setName("a@example.com");
 //            user1.setPassword("password123");
-//            user1.setAvatar_url("http://localhost:8080/uploads/2.png");
+//            user1.setAvatar_url("http://192.168.0.189:8080/uploads/2.png");
 //
 //            User user2 = new User();
-//            user2.setFirst_name("Le Thi B");
+//           user2.setName("Nguyen Van A");
 //            user2.setEmail("b@example.com");
 //            user2.setPassword("password456");
 //            user2.setAvatar_url("https://www.behance.net/gallery/163707203/Genshin-Impact-HeaderBanner-Raiden");
@@ -32,7 +31,7 @@ public class DataSeeder {
 //            // Lưu người dùng vào cơ sở dữ liệu
 //            userRepository.save(user1);
 //            userRepository.save(user2);
-//
+
 //            // Tạo bài viết mẫu
 //            Post post1 = new Post();
 //            post1.setUser(user1);
@@ -49,6 +48,6 @@ public class DataSeeder {
 //            // Lưu bài viết vào cơ sở dữ liệu
 //            postRepository.save(post1);
 //            postRepository.save(post2);
-//        };
-//    }
+        };
+    }
 }
