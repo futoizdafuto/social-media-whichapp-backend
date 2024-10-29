@@ -18,13 +18,12 @@ public class DataSeeder {
         return args -> {
             // Tạo người dùng mẫu
 //            User user1 = new User();
-//            user1.setFirst_name("Nguyen Van A");
-//            user1.setEmail("a@example.com");
+//            user1.setName("a@example.com");
 //            user1.setPassword("password123");
 //            user1.setAvatar_url("http://192.168.0.189:8080/uploads/2.png");
 //
 //            User user2 = new User();
-//            user2.setFirst_name("Le Thi B");
+//           user2.setName("Nguyen Van A");
 //            user2.setEmail("b@example.com");
 //            user2.setPassword("password456");
 //            user2.setAvatar_url("https://www.behance.net/gallery/163707203/Genshin-Impact-HeaderBanner-Raiden");

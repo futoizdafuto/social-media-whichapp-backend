@@ -1,6 +1,5 @@
 package com.example.Social_Media_WhichApp.entity;
 
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
@@ -21,7 +20,6 @@ public class Media {
     private Post post;
 
     public Media() {
-
     }
 
     public Media(String url, String type, Post post) {
@@ -30,7 +28,6 @@ public class Media {
         this.post = post;
     }
 
-    // Getters và Setters
     public Long getId() {
         return id;
     }
@@ -47,7 +44,7 @@ public class Media {
         this.url = url;
     }
 
-    public String geType() {
+    public String getType() {
         return type;
     }
 

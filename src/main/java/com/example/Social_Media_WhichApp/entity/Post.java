@@ -1,6 +1,5 @@
 package com.example.Social_Media_WhichApp.entity;
 
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
@@ -13,7 +12,7 @@ public class Post {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long post_id;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
@@ -25,26 +24,27 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Media> mediaList;
 
-
     private Date created_at;
 
     public Post() {
     }
 
-    public Post(Long id, User user, String content, List<Media> mediaList, Date created_at) {
-        this.id = id;
+    public Post(Long post_id, User user, String content, List<Media> mediaList, Date created_at) {
+
+        this.post_id = post_id;
         this.user = user;
         this.content = content;
         this.mediaList = mediaList;
         this.created_at = created_at;
     }
 
-    public Long getId() {
-        return id;
+
+    public Long getPost_id() {
+        return post_id;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public void setPost_id(Long post_id) {
+        this.post_id = post_id;
     }
 
     public User getUser() {
@@ -79,3 +79,4 @@ public class Post {
         this.created_at = created_at;
     }
 }
+
