@@ -1,9 +1,11 @@
 package com.example.Social_Media_WhichApp.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Table(name = "post")
@@ -15,22 +17,25 @@ public class Post {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
+    @JsonBackReference
     private User user;
 
     private String content;
-    private String img_url;
-    private String video_url;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Media> mediaList;
+
+
     private Date created_at;
 
     public Post() {
     }
 
-    public Post(Long id, User user, String content, String img_url, String video_url, Date created_at) {
+    public Post(Long id, User user, String content, List<Media> mediaList, Date created_at) {
         this.id = id;
         this.user = user;
         this.content = content;
-        this.img_url = img_url;
-        this.video_url = video_url;
+        this.mediaList = mediaList;
         this.created_at = created_at;
     }
 
@@ -58,20 +63,12 @@ public class Post {
         this.content = content;
     }
 
-    public String getImg_url() {
-        return img_url;
+    public List<Media> getMediaList() {
+        return mediaList;
     }
 
-    public void setImg_url(String img_url) {
-        this.img_url = img_url;
-    }
-
-    public String getVideo_url() {
-        return video_url;
-    }
-
-    public void setVideo_url(String video_url) {
-        this.video_url = video_url;
+    public void setMediaList(List<Media> mediaList) {
+        this.mediaList = mediaList;
     }
 
     public Date getCreated_at() {

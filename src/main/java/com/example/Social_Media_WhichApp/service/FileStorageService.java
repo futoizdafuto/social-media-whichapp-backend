@@ -43,7 +43,7 @@ public class FileStorageService {
         Files.copy(file.getInputStream(), path);
 
         // Trả về URL công khai để truy cập ảnh
-        return "/uploads/" + file.getOriginalFilename();
+        return file.getOriginalFilename();
     }
 
 }
