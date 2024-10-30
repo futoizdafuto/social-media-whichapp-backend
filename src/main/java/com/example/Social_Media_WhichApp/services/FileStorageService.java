@@ -12,24 +12,27 @@ import java.util.UUID;
 
 
 // file này hiện tại chưa cần thiết
-//@Service
-//public class FileStorageService {
-//
-//   public  String unitSubString = UUID.randomUUID().toString();
-//
-//    @Value("${upload.dir}")
-//    private String uploadDir;
-//
-//
-//    public String save_File(MultipartFile file) throws IOException {
-//        String unitSubString = UUID.randomUUID().toString() + file.getOriginalFilename();
-//        if(file.isEmpty()){
-//            throw new IOException("File ís Emty");
-//        }
-//
-//        Path path = Paths.get(uploadDir + unitSubString);
-//        Files.copy(file.getInputStream(), path);
-//
-//        return file.getOriginalFilename();
-//    }
-//}
+@Service
+public class FileStorageService {
+
+   public  String unitSubString;
+
+    @Value("${upload.dir}")
+    private String uploadDir;
+
+
+    public String save_File(MultipartFile file) throws IOException {
+       unitSubString = UUID.randomUUID().toString() + file.getOriginalFilename();
+        if(file.isEmpty()){
+            throw new IOException("File ís Emty");
+        }
+
+        Path path = Paths.get(uploadDir + unitSubString);
+        Files.copy(file.getInputStream(), path);
+        return file.getOriginalFilename();
+    }
+
+    public String provider_RandomString(){
+        return unitSubString;
+    }
+}

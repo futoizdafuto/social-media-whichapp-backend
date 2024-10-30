@@ -5,7 +5,7 @@ import com.example.Social_Media_WhichApp.entity.Media;
 import com.example.Social_Media_WhichApp.entity.Post;
 import com.example.Social_Media_WhichApp.entity.User;
 import com.example.Social_Media_WhichApp.repository.PostRepository;
-//import com.example.Social_Media_WhichApp.services.FileStorageService;
+import com.example.Social_Media_WhichApp.services.FileStorageService;
 import com.example.Social_Media_WhichApp.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,28 +26,33 @@ import java.util.UUID;
 public class PostController {
 
 
-    public  String unitSubString;
-
-    @Value("${upload.dir}")
-    private String uploadDir;
-
-
-    public String save_File(MultipartFile file) throws IOException {
-        if(file.isEmpty()){
-            throw new IOException("File ís Emty");
-        }
-        unitSubString = UUID.randomUUID().toString();
-        Path path = Paths.get(uploadDir + unitSubString + "_"+file.getOriginalFilename());
-        Files.copy(file.getInputStream(), path);
-
-        return file.getOriginalFilename();
-    }
+//    public  String unitSubString;
+//
+//    @Value("${upload.dir}")
+//    private String uploadDir;
+//
+//
+//    public String save_File(MultipartFile file) throws IOException {
+//        if(file.isEmpty()){
+//            throw new IOException("File ís Emty");
+//        }
+//        unitSubString = UUID.randomUUID().toString();
+//        Path path = Paths.get(uploadDir + unitSubString + "_"+file.getOriginalFilename());
+//        Files.copy(file.getInputStream(), path);
+//
+//        return file.getOriginalFilename();
+//    }
 
     @Autowired
     private PostService postService;
 
-//    @Autowired
-//    private FileStorageService fileStorageService;
+    @Autowired
+    private FileStorageService fileStorageService;
+
+    private String getSubRandom() {
+        return fileStorageService.provider_RandomString();
+    }
+
     @Autowired
     private PostRepository postRepository;
 
@@ -70,13 +75,13 @@ public class PostController {
             post.setContent(content);
             post.setCreated_at(new Date());
 
-
             List<Media> mediaList = new ArrayList<>();
 
             for (MultipartFile file : files) {
-                String fileName =  save_File(file);
+                String fileName =  fileStorageService.save_File(file);
                 String fileType = fileName.endsWith(".mp4") ? "video" : "image";
-                String fileUrl = "uploads/" + unitSubString+  "_"  + fileName;
+//                String fileUrl = "uploads/" + unitSubString+  "_"  + fileName;
+                String fileUrl = "uploads/" + getSubRandom();
 
                 Media media = new Media(fileUrl, fileType , post);
                 mediaList.add(media);
@@ -96,7 +101,7 @@ public class PostController {
 
 
 //    @DeleteMapping("/{id}")
-//    public Re
+//    public ResponseEntity<Post>
 
 
 
