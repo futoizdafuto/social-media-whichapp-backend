@@ -1,7 +1,9 @@
 package com.example.Social_Media_WhichApp;
 
+import com.example.Social_Media_WhichApp.entity.Role;
 import com.example.Social_Media_WhichApp. entity.User;
 import com.example.Social_Media_WhichApp.entity.Post;
+import com.example.Social_Media_WhichApp.repository.RoleRepository;
 import com.example.Social_Media_WhichApp.repository.UserRepository;
 import com.example.Social_Media_WhichApp.repository.PostRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -14,20 +16,28 @@ import java.util.Date;
 public class DataSeeder {
 
     @Bean
-    CommandLineRunner initData(UserRepository userRepository, PostRepository postRepository) {
+    CommandLineRunner initData(UserRepository userRepository, PostRepository postRepository, RoleRepository roleRepository) {
         return args -> {
-            // Tạo người dùng mẫu
+//            Role admin = new Role();
+//            admin.setType("admin");
+//            roleRepository.save(admin);
+//            Role user = new Role();
+//            user.setType("user");
+//            roleRepository.save(user);
+////             Tạo người dùng mẫu
 //            User user1 = new User();
 //            user1.setName("a@example.com");
+//            user1.setUsername("abc");
 //            user1.setPassword("password123");
 //            user1.setAvatar_url("http://192.168.0.189:8080/uploads/2.png");
-//
+//            user1.setRole(admin);
 //            User user2 = new User();
 //           user2.setName("Nguyen Van A");
+//            user2.setUsername("abcd");
 //            user2.setEmail("b@example.com");
 //            user2.setPassword("password456");
 //            user2.setAvatar_url("https://www.behance.net/gallery/163707203/Genshin-Impact-HeaderBanner-Raiden");
-//
+//            user2.setRole(user);
 //            // Lưu người dùng vào cơ sở dữ liệu
 //            userRepository.save(user1);
 //            userRepository.save(user2);
