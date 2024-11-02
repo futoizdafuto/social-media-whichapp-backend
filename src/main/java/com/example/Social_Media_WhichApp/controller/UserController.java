@@ -29,4 +29,10 @@ public class UserController {
     public Map<String, Object> loginUser(@RequestParam String username, @RequestParam String password) {
         return userService.loginUser(username, password);
     }
+
+    // Phương thức để xử lý đăng nhập của người dùng
+    @PostMapping("/register") // Xử lý yêu cầu POST đến api/users/login
+    public Map<String, Object> registerUser(@RequestParam String username, @RequestParam String password, @RequestParam String email, @RequestParam String name) {
+        return userService.register(username, password, email, name);
+    }
 }
