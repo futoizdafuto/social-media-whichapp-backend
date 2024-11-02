@@ -1,5 +1,6 @@
 package com.example.Social_Media_WhichApp.services;
 
+import com.example.Social_Media_WhichApp.entity.Role;
 import com.example.Social_Media_WhichApp.entity.User;
 import com.example.Social_Media_WhichApp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +25,7 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    public User createUser(User user){
 
-        return userRepository.save(user);
-    }
     public User findUserById(long id){
         User user = userRepository.findById(id).orElse(null);
         return user;
@@ -36,7 +34,57 @@ public class UserService {
     public User findUserByUsername(String username) {
         return userRepository.findByUsername(username);
     }
+    public User createUser(User user){
+        User newUser = userRepository.save(user);
+        return userRepository.save(user);
+    }
 
+    // Đăng ký tài khoản
+    public Map<String, Object> register(String username, String password, String email, String name) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra xem tên người dùng có tồn tại không
+        if (userRepository.findByUsername(username) != null) {
+            response.put("register", Map.of(
+            "status", "error",
+            "message", "Username already exists"
+            ));
+            return response;
+        }
+
+        // Tạo một đối tượng Role với id = 2
+        Role defaultRole = new Role();
+        defaultRole.setRole_id(2L); // Đặt id vai trò mặc định là 2
+
+        // Tạo đối tượng người dùng mới
+        User newUser = new User();
+        newUser.setUsername(username);
+        newUser.setPassword(password); // Nên mã hóa mật khẩu trước khi lưu
+        newUser.setEmail(email);
+        newUser.setName(name);
+        newUser.setRole(defaultRole); // Thiết lập vai trò cho người dùng
+
+        // Lưu người dùng mới vào cơ sở dữ liệu
+        userRepository.save(newUser);
+
+        // Tạo phản hồi thành công
+        Map<String, Object> userData = new HashMap<>(); // Bản đồ cho thông tin người dùng
+        userData.put("user_id", newUser.getUser_id());
+        userData.put("username", newUser.getUsername());
+        userData.put("email", newUser.getEmail());
+        userData.put("name", newUser.getName());
+        userData.put("role", newUser.getRole().getRole_id());
+
+        // Cập nhật phản hồi
+        response.put("register", Map.of(
+                "status", "success",
+                "message", "User registered successfully",
+                "data", Map.of("user", userData),
+                "time", LocalDateTime.now()
+        ));
+
+        return response; // Trả về phản hồi
+    }
 
     // Đăng nhập bằng username
     public Map<String, Object> loginUser(String username, String password) {
@@ -45,11 +93,8 @@ public class UserService {
 
         // Kiểm tra xem người dùng có tồn tại và mật khẩu có khớp không
         if (user != null && user.getPassword().equals(password)) {
-            response.put("login", true); // Nếu đăng nhập thành công, thêm thông tin vào bản đồ
-            response.put("status", "success");
-            response.put("message", "Login successful");
-            // Tạo bản đồ cho dữ liệu người dùng
-            Map<String, Object> userData = new HashMap<>();
+            // Nếu đăng nhập thành công
+            Map<String, Object> userData = new HashMap<>(); // Tạo bản đồ cho dữ liệu người dùng
             userData.put("id", user.getUser_id());
             userData.put("username", user.getUsername());
             userData.put("email", user.getEmail());
@@ -57,15 +102,23 @@ public class UserService {
             userData.put("role", user.getRole().getRole_id());
             userData.put("avatar", user.getAvatar_url());
 
-            response.put("data", Map.of("user", userData)); // Thêm thông tin người dùng vào json
-            response.put("time", LocalDateTime.now());
+            // Thêm thông tin vào phản hồi
+            response.put("login", Map.of(
+                    "status", "success",
+                    "message", "Login successful",
+                    "data", Map.of("user", userData),
+                    "time", LocalDateTime.now()
+            ));
         } else {
-            response.put("login", false); // Nếu đăng nhập không thành công, đánh dấu là false
-            response.put("status", "error");
-            response.put("message", "Login error");
+            // Nếu đăng nhập không thành công
+            response.put("login", Map.of(
+                    "status", "error",
+                    "message", "Login error"
+            ));
         }
 
         return response; // Trả về phản hồi
     }
+
 
 }
