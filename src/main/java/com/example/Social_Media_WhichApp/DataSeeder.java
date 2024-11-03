@@ -24,23 +24,8 @@ public class DataSeeder {
 //            Role user = new Role();
 //            user.setType("user");
 //            roleRepository.save(user);
-////             Tạo người dùng mẫu
-//            User user1 = new User();
-//            user1.setName("a@example.com");
-//            user1.setUsername("abc");
-//            user1.setPassword("password123");
-//            user1.setAvatar_url("http://192.168.0.189:8080/uploads/2.png");
-//            user1.setRole(admin);
-//            User user2 = new User();
-//           user2.setName("Nguyen Van A");
-//            user2.setUsername("abcd");
-//            user2.setEmail("b@example.com");
-//            user2.setPassword("password456");
-//            user2.setAvatar_url("https://www.behance.net/gallery/163707203/Genshin-Impact-HeaderBanner-Raiden");
-//            user2.setRole(user);
-//            // Lưu người dùng vào cơ sở dữ liệu
-//            userRepository.save(user1);
-//            userRepository.save(user2);
+
+
 
 //            // Tạo bài viết mẫu
 //            Post post1 = new Post();
