@@ -20,7 +20,7 @@ public class DataSeeder {
 //            User user1 = new User();
 //            user1.setName("a@example.com");
 //            user1.setPassword("password123");
-//            user1.setAvatar_url("http://192.168.0.189:8080/uploads/2.png");
+//            user1.setAvatar_url("http://192.168.0.189:8080/uploads/0c5dfdee-79ce-4ede-ac33-b96ba9e62686ava1.jpeg");
 //
 //            User user2 = new User();
 //           user2.setName("Nguyen Van A");
