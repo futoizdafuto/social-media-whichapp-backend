@@ -1,6 +1,9 @@
 package com.example.Social_Media_WhichApp.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -17,6 +20,8 @@ public class User {
     private String avatar_url;
 
     private String username;
+
+    @JsonIgnore // bỏ qua không hiển thị trong json api
     private String password;
     private String email;
     private String name;
@@ -25,6 +30,11 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Post> posts;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id")
+    @JsonManagedReference //để quản lý quan hệ của Role
+    private Role role;
+
     public User() {
     }
 
@@ -32,7 +42,7 @@ public class User {
         this.user_id = id;
     }
 
-    public User(Long id, String avatar_url, String username, String password, String email, String name, List<Post> posts) {
+    public User(Long id, String avatar_url, String username, String password, String email, String name, List<Post> posts, Role role) {
         this.user_id = id;
         this.avatar_url = avatar_url;
         this.username = username;
@@ -40,6 +50,15 @@ public class User {
         this.email = email;
         this.name = name;
         this.posts = posts;
+        this.role = role;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     public Long getUser_id() {
