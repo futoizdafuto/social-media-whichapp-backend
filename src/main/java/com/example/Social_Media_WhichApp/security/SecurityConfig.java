@@ -25,7 +25,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/login", "/api/users/register").permitAll() // Cho phép truy cập vào đăng nhập, đăng ký
+                        .requestMatchers("/api/users/login","/api/users/reLogin",  "/api/users/register").permitAll() // Cho phép truy cập vào đăng nhập, đăng ký
                         .anyRequest().authenticated());
 
         // Thêm JwtAuthenticationFilter vào đây
