@@ -8,7 +8,7 @@ public class EncryptPassword {
     private static final String ALGORITHM = "AES";
     private static final String TRANSFORMATION = "AES/ECB/PKCS5Padding";
 
-    // Khóa bí mật cho AES (nên quản lý khóa này an toàn, ví dụ lưu trong tệp cấu hình an toàn hoặc HSM)
+    // Khóa bí mật cho AES
     private static final String SECRET_KEY = "thuctaplaptrinht";
 
     // Hàm mã hóa mật khẩu
@@ -30,4 +30,17 @@ public class EncryptPassword {
         byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedData));
         return new String(decryptedBytes);
     }
+    public static void main(String[] args) {
+        try {
+            String originalPassword = "12345";
+            String encryptedPassword = EncryptPassword.encrypt(originalPassword);
+            String decryptedPassword = EncryptPassword.decrypt("lEY8/FUyRdDjzoSpNiy95g==");
+
+            System.out.println("Encrypted Password: " + encryptedPassword);
+            System.out.println("Decrypted Password: " + decryptedPassword);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

@@ -1,5 +1,7 @@
 package com.example.Social_Media_WhichApp.security;
 
+import com.example.Social_Media_WhichApp.entity.Token;
+import com.example.Social_Media_WhichApp.repository.TokenRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -8,16 +10,23 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.Optional;
 
 @Component
 public class JwtUtil {
 
+    private final TokenRepository tokenRepository;
     // Tạo key sử dụng với thuật toán HS512
     private Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
 
     @Value("${jwt.expiration}")
     private long expiration;
+
+    public JwtUtil(TokenRepository tokenRepository) {
+        this.tokenRepository = tokenRepository;
+    }
 
     // Tạo token
     public String generateToken(String username) {
@@ -34,6 +43,9 @@ public class JwtUtil {
 
     // Xác thực token
     public boolean validateToken(String token) {
+        if (!isTokenInDatabase(token)) {
+            return false;
+        }
         try {
             Jwts.parser().setSigningKey(key).parseClaimsJws(token);
             return true;
@@ -41,7 +53,10 @@ public class JwtUtil {
             return false;
         }
     }
-
+    private boolean isTokenInDatabase(String token) {
+        Optional<Token> existingToken = tokenRepository.findByToken(token);
+        return existingToken.isPresent() && existingToken.get().getExpiresAt().isAfter(LocalDateTime.now());
+    }
     // Lấy username từ token
     public String getUsernameFromToken(String token) {
         Claims claims = Jwts.parser()

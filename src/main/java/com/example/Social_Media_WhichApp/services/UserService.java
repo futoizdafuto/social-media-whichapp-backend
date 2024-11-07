@@ -106,7 +106,7 @@ public class UserService {
     }
 
     // Đăng nhập bằng username
-    public Map<String, Object> loginUser(String username, String password, String deviceId) {
+    public Map<String, Object> loginUser(String username, String password) {
         User user = findUserByUsername(username); // Tìm người dùng theo tên người dùng (username)
         Map<String, Object> response = new HashMap<>(); // Tạo một bản đồ (map) để lưu trữ phản hồi
 
@@ -119,8 +119,7 @@ public class UserService {
                     // Tạo token cho người dùng
                     String tokenValue = jwtUtil.generateToken(username);
                     Token token = new Token(tokenValue, LocalDateTime.now(),
-                            LocalDateTime.now().plusSeconds(jwtUtil.getExpiration()), user, deviceId);
-                    token.setDeviceId(deviceId);
+                            LocalDateTime.now().plusSeconds(jwtUtil.getExpiration()), user);
                     tokenRepository.save(token);
 
                     // Nếu đăng nhập thành công
@@ -145,6 +144,7 @@ public class UserService {
                     response.put("login", Map.of(
                             "Login", false,
                             "status", "error",
+                            "password", "error",
                             "message", "Invalid password"
                     ));
                 }
@@ -168,15 +168,29 @@ public class UserService {
         return response; // Trả về phản hồi
     }
 
-    @Transactional // Đánh dấu phương thức này là giao dịch, để đảm bảo tính nhất quán
-    public void logoutUser(String username, String deviceId) {
-        // Tìm kiếm người dùng dựa trên tên đăng nhập
-        User user = userRepository.findByUsername(username);
-        if (user != null) {
-            // Nếu người dùng tồn tại, xóa tất cả các token liên quan đến người dùng đó
-            tokenRepository.deleteByUserAndDeviceId(user, deviceId);
+    @Transactional // Đảm bảo tính nhất quán của giao dịch
+    public Map<String, Object> logoutUser(String tokenValue) {
+        // Tìm kiếm token trong cơ sở dữ liệu
+        Optional<Token> token = tokenRepository.findByToken(tokenValue);
+
+        Map<String, Object> response = new HashMap<>();
+
+        if (token.isPresent()) {
+            // Nếu token tồn tại, xóa token khỏi cơ sở dữ liệu
+            tokenRepository.delete(token.get());
+            response.put("status", "success");
+            response.put("message", "User logged out successfully");
+            response.put("login", false); // Thêm thuộc tính login
+        } else {
+            // Token không tồn tại hoặc không hợp lệ
+            response.put("status", "error");
+            response.put("message", "Invalid or expired token");
         }
+
+        return Map.of("logout", response); // Bọc thông tin trong đối tượng logout
     }
+
+
 
     // kiểm tra login lấy ra thông tin đăng nhập
     public Map<String, Object> checkUserLoginStatus(String tokenValue) {
@@ -207,5 +221,45 @@ public class UserService {
 
         return response;
     }
+    public Map<String, Object> reLogin(String tokenValue) throws Exception {
+        Map<String, Object> response = new HashMap<>();
+        Optional<Token> optionalToken = tokenRepository.findByToken(tokenValue);
+
+        if (optionalToken.isPresent() && optionalToken.get().getExpiresAt().isAfter(LocalDateTime.now())) {
+            User user = optionalToken.get().getUser();
+            tokenRepository.delete(optionalToken.get());
+
+            String newTokenValue = jwtUtil.generateToken(user.getUsername());
+            Token newToken = new Token(newTokenValue, LocalDateTime.now(),
+                    LocalDateTime.now().plusSeconds(jwtUtil.getExpiration()), user);
+            tokenRepository.save(newToken);
+
+            Map<String, Object> userData = new HashMap<>();
+            userData.put("id", user.getUser_id());
+            userData.put("username", user.getUsername());
+            userData.put("email", user.getEmail());
+            userData.put("name", user.getName());
+            userData.put("role", user.getRole().getRole_id());
+            userData.put("avatar", user.getAvatar_url());
+
+            response.put("relogin", Map.of(
+                    "Login", true,
+                    "status", "success",
+                    "message", "Login successful with existing token",
+                    "newToken", newTokenValue,
+                    "data", Map.of("user", userData),
+                    "time", LocalDateTime.now()
+            ));
+        } else {
+            response.put("login", Map.of(
+                    "Login", false,
+                    "status", "error",
+                    "message", "Invalid or expired token"
+            ));
+        }
+        return response;
+    }
+
+
 
 }
