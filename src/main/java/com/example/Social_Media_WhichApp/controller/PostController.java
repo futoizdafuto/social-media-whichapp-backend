@@ -88,7 +88,9 @@ public class PostController {
                 String fileName =  fileStorageService.save_File(file);
                 String fileType = fileName.endsWith(".mp4") ? "video" : "image";
 //                String fileUrl = "uploads/" + unitSubString+  "_"  + fileName;
-                String fileUrl = "http://"+ ipAddress + ":8080"+"/uploads/" + getSubRandom();
+
+                String fileUrl = "https:/"+ ipAddress + ":8443"+"/uploads/" + getSubRandom();
+
 
                 Media media = new Media(fileUrl, fileType , post);
                 mediaList.add(media);

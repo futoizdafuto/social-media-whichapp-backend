@@ -14,7 +14,7 @@ public class TokenService {
     private TokenRepository tokenRepository;
 
     // Phương thức này sẽ được gọi mỗi giờ để xóa các token đã hết hạn
-    @Scheduled(fixedRate = 3600) // 1 giờ = 3600000 milliseconds
+    @Scheduled(fixedRate = 3600000) // 1 giờ = 3600000 milliseconds
     @Transactional
     public void deleteExpiredTokens() {
         LocalDateTime now = LocalDateTime.now();

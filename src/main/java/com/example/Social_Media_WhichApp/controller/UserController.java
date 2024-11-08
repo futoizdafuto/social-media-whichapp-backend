@@ -30,8 +30,8 @@ public class UserController {
         return userService.loginUser(username, password);
     }
 
-    // Phương thức để xử lý đăng nhập của người dùng
-    @PostMapping("/register") // Xử lý yêu cầu POST đến api/users/login
+    // Phương thức để xử lý đăng ký của người dùng
+    @PostMapping("/register") // Xử lý yêu cầu POST đến api/users/register
     public Map<String, Object> registerUser(@RequestParam String username, @RequestParam String password, @RequestParam String email, @RequestParam String name) {
         return userService.register(username, password, email, name);
     }
