@@ -18,13 +18,13 @@ public class DataSeeder {
     @Bean
     CommandLineRunner initData(UserRepository userRepository, PostRepository postRepository, RoleRepository roleRepository) {
         return args -> {
+
 //            Role admin = new Role();
 //            admin.setType("admin");
 //            roleRepository.save(admin);
 //            Role user = new Role();
 //            user.setType("user");
 //            roleRepository.save(user);
-
 
 
 //            // Tạo bài viết mẫu

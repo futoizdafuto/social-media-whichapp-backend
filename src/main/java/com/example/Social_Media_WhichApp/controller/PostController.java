@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -49,6 +51,9 @@ public class PostController {
     @Autowired
     private FileStorageService fileStorageService;
 
+    public PostController() throws UnknownHostException {
+    }
+
     private String getSubRandom() {
         return fileStorageService.provider_RandomString();
     }
@@ -60,6 +65,8 @@ public class PostController {
     public List<Post> getAllPosts(){
         return postService.getAllPosts();
     }
+    InetAddress ip = InetAddress.getByName(InetAddress.getLocalHost().getHostAddress());
+    String ipAddress = ip.toString();
 
     @PostMapping("/upload")
     public ResponseEntity<Map<String, Object>> uploadPost(
@@ -81,7 +88,7 @@ public class PostController {
                 String fileName =  fileStorageService.save_File(file);
                 String fileType = fileName.endsWith(".mp4") ? "video" : "image";
 //                String fileUrl = "uploads/" + unitSubString+  "_"  + fileName;
-                String fileUrl = "uploads/" + getSubRandom();
+                String fileUrl = "http://"+ ipAddress + ":8080"+"/uploads/" + getSubRandom();
 
                 Media media = new Media(fileUrl, fileType , post);
                 mediaList.add(media);
