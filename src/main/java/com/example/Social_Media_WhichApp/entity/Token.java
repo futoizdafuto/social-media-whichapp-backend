@@ -19,8 +19,6 @@ public class Token {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(nullable = false)
-    private String deviceId; // ID thiết bị
 
     @Column(nullable = false)
     private LocalDateTime expiresAt;
@@ -32,21 +30,14 @@ public class Token {
 
     public Token() {}
 
-    public Token(String token, LocalDateTime createdAt, LocalDateTime expiresAt, User user, String deviceId) {
+    public Token(String token, LocalDateTime createdAt, LocalDateTime expiresAt, User user) {
         this.token = token;
         this.createdAt = createdAt;
         this.expiresAt = expiresAt;
         this.user = user;
-        this.deviceId = deviceId;
+
     }
 
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
-    }
 
     // Getters và Setters
     public Long getId() { return id; }
