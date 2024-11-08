@@ -51,20 +51,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // Kế th�
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-<<<<<<< HEAD
-            throws ServletException, IOException {
-        String token = extractToken(request); // Trích xuất token từ yêu cầu
-        String path = request.getRequestURI(); // Lấy đường dẫn yêu cầu
-
-        // Bỏ qua kiểm tra token cho các endpoint không yêu cầu xác thực
-        if (isPublicRequest(path)) {
-            chain.doFilter(request, response); // Cho phép tiếp tục xử lý mà không cần token
-            return;
-        }
-
-        // Kiểm tra token cho các endpoint khác
-        if (token != null && jwtUtil.validateToken(token)) {
-=======
             throws ServletException, IOException { // Phương thức chính để xử lý yêu cầu
         String token = extractToken(request); // Trích xuất token từ yêu cầu
 
@@ -80,10 +66,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // Kế th�
                 return;
             }
         }
-
+        // Bỏ qua kiểm tra token cho các endpoint không yêu cầu xác thực
+        if (isPublicRequest(path)) {
+            chain.doFilter(request, response); // Cho phép tiếp tục xử lý mà không cần token
+            return;
+        }
         // Kiểm tra token cho các endpoint khác ngoài login/register
         if (token != null && jwtUtil.validateToken(token)) { // Nếu token không null và hợp lệ
->>>>>>> 863138a330a1516ee0a7b5c34d1d213c934189aa
             authenticateUser(token, request); // Xác thực người dùng nếu token hợp lệ
         } else {
             sendErrorResponse(response, token == null ? "Token is required" : "Invalid or expired token");
@@ -103,7 +92,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // Kế th�
     }
 
     private boolean isPublicRequest(String path) {
-        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.startsWith("/uploads/") || path.startsWith("/api/");
+        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.startsWith("/uploads/");
+//        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.startsWith("/uploads/") || path.startsWith("/api/");
     }
 
 
@@ -115,14 +105,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // Kế th�
 
     // Phương thức để kiểm tra nếu yêu cầu đến từ các endpoint không yêu cầu token hoặc từ endpoint /register khi người dùng đã có token hợp lệ
     private boolean isLoginOrRegisterRequest(String path) {
-<<<<<<< HEAD
-        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.equals("/upload/") || path.equals("/api/");
-=======
-        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.equals("/api/users/reLogin"); // Kiểm tra đường dẫn
+        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.equals("/api/users/reLogin") || path.startsWith("/uploads/");
+//        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.equals("/upload/") || path.equals("/api/")|| path.equals("/api/users/reLogin");
+
     }
     private boolean isReLogin(String path) {
         return path.equals("/api/users/reLogin"); // Kiểm tra đường dẫn
->>>>>>> 863138a330a1516ee0a7b5c34d1d213c934189aa
     }
     // Phương thức để xác thực người dùng
     private void authenticateUser(String token, HttpServletRequest request) {

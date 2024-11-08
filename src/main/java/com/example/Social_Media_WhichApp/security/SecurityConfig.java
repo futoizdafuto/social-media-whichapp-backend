@@ -25,13 +25,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-<<<<<<< HEAD
-                        .requestMatchers("/api/users/login", "/api/users/register" , "/uploads/**", "/api/**").permitAll()
+//                        .requestMatchers("/api/users/login", "/api/users/register" , "/uploads/**", "/api/**" , "/api/users/reLogin").permitAll()
+                        .requestMatchers("/api/users/login", "/api/users/register" , "/api/users/reLogin" ,"/uploads/**").permitAll()
                         // Cho phép truy cập vào đăng nhập, đăng ký
 //                        .requestMatchers("/api/**").permitAll()
-=======
-                        .requestMatchers("/api/users/login","/api/users/reLogin",  "/api/users/register").permitAll() // Cho phép truy cập vào đăng nhập, đăng ký
->>>>>>> 863138a330a1516ee0a7b5c34d1d213c934189aa
+
                         .anyRequest().authenticated());
 
         // Thêm JwtAuthenticationFilter vào đây
