@@ -19,36 +19,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // Kế th�
     @Autowired // Tự động tiêm phụ thuộc JwtUtil để sử dụng trong lớp
     private JwtUtil jwtUtil;
 
-//    @Override
-//    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-//            throws ServletException, IOException {
-//        String token = extractToken(request);// Trích xuất token từ yêu cầu
-//
-//        String path = request.getRequestURI();// Lấy đường dẫn yêu cầu
-//        if (isLoginOrRegisterRequest(path)) {
-//            // Nếu token hợp lệ và yêu cầu là login hoặc register, trả về thông báo yêu cầu đăng xuất
-//            if (token != null && jwtUtil.validateToken(token)) {
-//                sendErrorResponse(response, "Please log out before " + (path.equals("/api/users/register") ? "registering a new account" : "logging"));
-//                return;
-//            } else {
-//                // Nếu là login hoặc register mà không có token hợp lệ, tiếp tục xử lý
-//                chain.doFilter(request, response);
-//                return;
-//            }
-//        }
-//
-//        // Kiểm tra token cho các endpoint khác ngoài login/register
-//        if (token != null && jwtUtil.validateToken(token)) {
-//            authenticateUser(token, request);// Xác thực người dùng nếu token hợp lệ
-//        } else {
-//            // Nếu không có token hoặc token không hợp lệ, gửi phản hồi lỗi
-//            sendErrorResponse(response, token == null ? "Token is required" : "Invalid or expired token");
-//            return;
-//        }
-//
-//        chain.doFilter(request, response); // Nếu token hợp lệ, tiếp tục xử lý yêu cầu
-//    }
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException { // Phương thức chính để xử lý yêu cầu
@@ -88,12 +58,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // Kế th�
                 return; // Ngừng xử lý yêu cầu nếu token không hợp lệ
             }
         }
+
+        // Kiểm tra yêu cầu DELETE cho bài viết
+        if (isDeleteRequest(path)) {
+            // Đảm bảo yêu cầu DELETE có token hợp lệ và người dùng có quyền thực hiện thao tác này
+            if (token != null && jwtUtil.validateToken(token)) {
+                authenticateUser(token, request); // Xác thực người dùng nếu token hợp lệ
+            } else {
+                sendErrorResponse(response, "Token is required for delete operation");
+                return; // Ngừng xử lý yêu cầu nếu token không hợp lệ
+            }
+        }
+
         chain.doFilter(request, response); // Nếu token hợp lệ, tiếp tục xử lý yêu cầu
     }
 
     private boolean isPublicRequest(String path) {
-        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.startsWith("/uploads/");
+        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.startsWith("/uploads/") ;
 //        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.startsWith("/uploads/") || path.startsWith("/api/");
+    }
+    // Kiểm tra yêu cầu DELETE
+    private boolean isDeleteRequest(String path) {
+        return path.startsWith("/api/posts/delete/");
     }
 
 
