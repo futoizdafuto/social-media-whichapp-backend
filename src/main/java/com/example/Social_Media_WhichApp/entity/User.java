@@ -14,6 +14,8 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @Column(name = "user_id")
+//    private Long userId;
     private Long user_id;
 
     @Column(length = 500)
@@ -21,13 +23,14 @@ public class User {
 
     private String username;
 
-    @JsonIgnore // bỏ qua không hiển thị trong json api
+//    @JsonIgnore // bỏ qua không hiển thị trong json api
     private String password;
     private String email;
     private String name;
 
     // 1 user có thể có nhiều bài viết
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonBackReference
     private List<Post> posts;
 
     @ManyToOne(fetch = FetchType.EAGER)

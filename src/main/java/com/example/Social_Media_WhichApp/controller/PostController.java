@@ -5,6 +5,7 @@ import com.example.Social_Media_WhichApp.entity.Media;
 import com.example.Social_Media_WhichApp.entity.Post;
 import com.example.Social_Media_WhichApp.entity.User;
 import com.example.Social_Media_WhichApp.repository.PostRepository;
+import com.example.Social_Media_WhichApp.repository.UserRepository;
 import com.example.Social_Media_WhichApp.services.FileStorageService;
 import com.example.Social_Media_WhichApp.services.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,6 @@ public class PostController {
 
     @Autowired
     private PostService postService;
-
     @Autowired
     private FileStorageService fileStorageService;
 
