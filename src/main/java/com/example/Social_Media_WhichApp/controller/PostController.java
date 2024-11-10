@@ -126,7 +126,9 @@ public class PostController {
             for (MultipartFile file : files) {
                 String fileName =  fileStorageService.save_File(file);
                 String fileType = fileName.endsWith(".mp4") ? "video" : "image";
+
                 String fileUrl = "https:/"+ ipAddress + ":8443"+"/uploads/" + getSubRandom();
+
 
                 Media media = new Media(fileUrl, fileType , post);
                 mediaList.add(media);
