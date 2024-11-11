@@ -146,7 +146,7 @@ public class PostController {
             userResponse.put("user_id", post.getUser().getUser_id());
             userResponse.put("username", post.getUser().getUsername());  // Nếu có thuộc tính này
 
-            response.put("message", "Post created successfully");
+            response.put("message", "Tạo bài viết thành công");
             response.put("post", savePost);
             response.put("user", userResponse);  // Thêm thông tin user vào phản hồi
 
@@ -164,21 +164,21 @@ public class PostController {
             Post post = postService.getPostById(postId);
             if (post == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body("Post not found");
+                        .body("Không tìm thấy bài viết");
             }
 
             // Lấy thông tin user hiện tại
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication == null || !authentication.isAuthenticated()) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body("User not authenticated");
+                        .body("Người dùng không được xác thực");
             }
 
             // Kiểm tra xem có phải chủ post không
             User currentUser = userService.findUserByUsername(authentication.getName());
             if (!currentUser.getUser_id().equals(post.getUser().getUser_id())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body("You can only delete your own posts");
+                        .body("Bạn chỉ có thể xóa khi bạn là chủ bài viết");
             }
 
             // Xóa các file media
@@ -211,14 +211,37 @@ public class PostController {
 
             // Xóa post
             postService.deletePostById(postId);
-            return ResponseEntity.ok("Post and associated media deleted successfully");
+            return ResponseEntity.ok("Xóa bài viết thành công");
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error deleting post: " + e.getMessage());
+                    .body("Lỗi khi xóa bài viết: " + e.getMessage());
         }
     }
 
+    @PutMapping("/update/{postId}")
+    public ResponseEntity<String> updatePostContent(@PathVariable Long postId,
+                                                    @RequestParam String content) {
+        try {
+            // Kiểm tra post tồn tại
+            Post post = postService.getPostById(postId);
+            if (post == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Post not found");
+            }
 
+            // Cập nhật content
+            post.setContent(content);
+
+            // Lưu vào database
+            postRepository.save(post);
+
+            return ResponseEntity.ok("Post content updated successfully");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating post: " + e.getMessage());
+        }
+    }
 }
