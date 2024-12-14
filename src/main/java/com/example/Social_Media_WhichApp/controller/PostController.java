@@ -3,6 +3,7 @@ package com.example.Social_Media_WhichApp.controller;
 
 import com.example.Social_Media_WhichApp.entity.Media;
 import com.example.Social_Media_WhichApp.entity.Post;
+import com.example.Social_Media_WhichApp.entity.PostComment;
 import com.example.Social_Media_WhichApp.entity.User;
 import com.example.Social_Media_WhichApp.repository.PostRepository;
 import com.example.Social_Media_WhichApp.repository.UserRepository;
@@ -220,5 +221,38 @@ public class PostController {
         }
     }
 
+    @PostMapping("/{postId}/like")
+    public ResponseEntity<String> likePost(@PathVariable Long postId, @RequestParam Long user_id) {
+        String response = postService.likePost(postId, user_id);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{postId}/unlike")
+    public ResponseEntity<String> unlikePost(@PathVariable Long postId, @RequestParam Long user_id) {
+        String response = postService.unlikePost(postId, user_id);
+        return ResponseEntity.ok(response);
+    }
+
+    // Endpoint để thêm bình luận vào bài viết
+    @PostMapping("/{postId}/comments")
+    public ResponseEntity<String> addComment(
+            @PathVariable Long postId,
+            @RequestParam Long user_id,
+            @RequestParam String content) {
+        String response = postService.addComment(postId, user_id, content);
+        return ResponseEntity.ok(response);
+    }
+
+    // Endpoint để lấy tất cả bình luận của một bài viết
+    @GetMapping("/{postId}/allcomments")
+    public ResponseEntity<List<PostComment>> getCommentsByPost(@PathVariable Long postId) {
+        List<PostComment> comments = postService.getCommentsByPost(postId);
+
+        if (comments == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(comments);
+    }
 
 }

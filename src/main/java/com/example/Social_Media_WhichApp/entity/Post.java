@@ -26,16 +26,18 @@ public class Post {
 
     private Date created_at;
 
+    private Long like_count;
     public Post() {
     }
 
-    public Post(Long post_id, User user, String content, List<Media> mediaList, Date created_at) {
+    public Post(Long post_id, User user, String content, List<Media> mediaList, Date created_at, Long like_count) {
 
         this.post_id = post_id;
         this.user = user;
         this.content = content;
         this.mediaList = mediaList;
         this.created_at = created_at;
+        this.like_count = like_count;
     }
 
 
@@ -78,5 +80,14 @@ public class Post {
     public void setCreated_at(Date created_at) {
         this.created_at = created_at;
     }
+
+    public Long getLike_count() {
+        return like_count;
+    }
+
+    public void setLike_count(Long like_count) {
+        this.like_count = like_count;
+    }
 }
+
 
