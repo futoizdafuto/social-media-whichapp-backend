@@ -8,8 +8,17 @@ import com.example.Social_Media_WhichApp.repository.UserRepository;
 import com.example.Social_Media_WhichApp.security.EncryptPassword;
 import com.example.Social_Media_WhichApp.security.JwtUtil;
 import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -19,6 +28,10 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+
+    // ./auth/userinfo.email
+    // ./auth/userinfo.profile
+    // 87591578803-eag78ddgkvdiidtb84ji60v1a9o9vpl7.apps.googleusercontent.com
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -257,6 +270,51 @@ public class UserService {
                     "message", "Invalid or expired token"
             ));
         }
+        return response;
+    }
+
+
+    // Đăng nhập với Google
+    public Map<String, Object> loginWithGoogle(OAuth2AuthenticationToken authentication) {
+        Map<String, Object> response = new HashMap<>();
+        OAuth2User oauth2User = authentication.getPrincipal();
+
+        String email = oauth2User.getAttribute("email");
+        String name = oauth2User.getAttribute("name");
+        String avatarUrl = oauth2User.getAttribute("picture");
+
+        // Kiểm tra xem người dùng đã tồn tại trong DB chưa
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            // Nếu người dùng chưa tồn tại, tạo người dùng mới
+            user = new User();
+            user.setEmail(email);
+            user.setName(name);
+            user.setAvatar_url(avatarUrl);
+            user = userRepository.save(user);
+        }
+
+        // Tạo JWT token cho người dùng
+        String tokenValue = jwtUtil.generateToken(user.getUsername());
+        Token token = new Token(tokenValue, LocalDateTime.now(),
+                LocalDateTime.now().plusSeconds(jwtUtil.getExpiration()), user);
+        tokenRepository.save(token);
+
+        // Trả về phản hồi đăng nhập thành công
+        Map<String, Object> userData = new HashMap<>();
+        userData.put("id", user.getUser_id());
+        userData.put("email", user.getEmail());
+        userData.put("name", user.getName());
+        userData.put("avatar", user.getAvatar_url());
+
+        response.put("login", Map.of(
+                "status", "success",
+                "message", "Google login successful",
+                "token", token,
+                "data", Map.of("user", userData),
+                "time", LocalDateTime.now()
+        ));
+
         return response;
     }
 

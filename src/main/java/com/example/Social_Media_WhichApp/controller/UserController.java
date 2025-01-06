@@ -4,6 +4,7 @@ import com.example.Social_Media_WhichApp.entity.User;
 import com.example.Social_Media_WhichApp.repository.UserRepository;
 import com.example.Social_Media_WhichApp.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -51,6 +52,10 @@ public class UserController {
     @PostMapping("/reLogin")
     public Map<String, Object> reLogin(@RequestParam String token) throws Exception {
         return userService.reLogin(token);
+    }
+    @GetMapping("/oauth2/callback/google")
+    public Map<String, Object> googleCallback(OAuth2AuthenticationToken authentication) {
+        return userService.loginWithGoogle(authentication);
     }
 
 }
