@@ -13,8 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -153,14 +156,68 @@ public class PostController {
         }
     }
 
+    @DeleteMapping("/delete/{postId}")
+    public ResponseEntity<String> deletePost(@PathVariable Long postId) {
+        try {
+            // Kiểm tra post tồn tại
+            Post post = postService.getPostById(postId);
+            if (post == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Post not found");
+            }
+
+            // Lấy thông tin user hiện tại
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("User not authenticated");
+            }
+
+            // Kiểm tra xem có phải chủ post không
+            User currentUser = userService.findUserByUsername(authentication.getName());
+            if (!currentUser.getUser_id().equals(post.getUser().getUser_id())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body("You can only delete your own posts");
+            }
+
+            // Xóa các file media
+            if (post.getMediaList() != null && !post.getMediaList().isEmpty()) {
+                for (Media media : post.getMediaList()) {
+                    try {
+                        String mediaUrl = media.getUrl();
+                        // Tách lấy phần tên file từ URL
+                        String fileName = mediaUrl.substring(mediaUrl.lastIndexOf("/") + 1);
+
+                        // Tạo đường dẫn đầy đủ đến file
+                        Path mediaPath = Paths.get("src", "main", "resources", "static", "uploads", fileName);
 
 
+                        System.out.println("Trying to delete file at: " + mediaPath.toString());
 
+                        if (Files.exists(mediaPath)) {
+                            Files.delete(mediaPath);
+                            System.out.println("Successfully deleted file: " + mediaPath);
+                        } else {
+                            System.out.println("File not found: " + mediaPath);
+                        }
 
-//    @DeleteMapping("/{id}")
-//    public ResponseEntity<Post>
+                    } catch (Exception e) {
+                        System.err.println("Error deleting media file: " + e.getMessage());
+                        e.printStackTrace(); // In ra stack trace để debug
+                    }
+                }
+            }
 
+            // Xóa post
+            postService.deletePostById(postId);
+            return ResponseEntity.ok("Post and associated media deleted successfully");
 
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error deleting post: " + e.getMessage());
+        }
+    }
 
 
 }

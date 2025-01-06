@@ -39,6 +39,7 @@ public class SecurityConfig {
                         .defaultSuccessUrl("/api/users/oauth2/callback/google", true) // Chuyển hướng sau khi đăng nhập thành công
                 );
 
+
         // Thêm JwtAuthenticationFilter vào đây
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

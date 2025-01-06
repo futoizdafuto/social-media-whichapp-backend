@@ -58,6 +58,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // Kế th�
                 return; // Ngừng xử lý yêu cầu nếu token không hợp lệ
             }
         }
+
+        // Kiểm tra yêu cầu DELETE cho bài viết
+        if (isDeleteRequest(path)) {
+            // Đảm bảo yêu cầu DELETE có token hợp lệ và người dùng có quyền thực hiện thao tác này
+            if (token != null && jwtUtil.validateToken(token)) {
+                authenticateUser(token, request); // Xác thực người dùng nếu token hợp lệ
+            } else {
+                sendErrorResponse(response, "Token is required for delete operation");
+                return; // Ngừng xử lý yêu cầu nếu token không hợp lệ
+            }
+        }
+
         chain.doFilter(request, response); // Nếu token hợp lệ, tiếp tục xử lý yêu cầu
     }
 
@@ -66,7 +78,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // Kế th�
                 || path.equals("/api/users/register")
                 || path.equals("/api/users/oauth2/callback/google")
                 || path.startsWith("/uploads/");
+
 //        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.startsWith("/uploads/") || path.startsWith("/api/");
+    }
+    // Kiểm tra yêu cầu DELETE
+    private boolean isDeleteRequest(String path) {
+        return path.startsWith("/api/posts/delete/");
     }
 
 
