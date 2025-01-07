@@ -251,20 +251,34 @@ public class FollowService {
             return response;
         }
 
+        // Lấy thông tin người dùng từ username
         User user = userRepository.findByUsername(username);
 
         // Lấy tất cả người dùng mà user này đang follow
         List<Follow> follows = followRepository.findByFollower(user);
 
-        // Chuyển danh sách Follow thành danh sách tên người dùng được follow
+        // Chuyển danh sách Follow thành danh sách tên người dùng được follow (following)
         List<String> followedUsernames = follows.stream()
                 .map(follow -> follow.getFollowed().getUsername())
                 .collect(Collectors.toList());
 
+        // Lấy số lượng người mà user này đang follow
+        int followCount = followedUsernames.size();
+
+        // Lấy số lượng người theo dõi user (followed_count) bằng cách đếm số dòng có followed_id là user.id
+        List<Follow> followers = followRepository.findByFollowed(user);
+        int followedCount = followers.size();
+
+        // Trả về kết quả
         response.put("status", "success");
-        response.put("message", "Fetched followed users successfully.");
-        response.put("data", followedUsernames);
-        response.put("follow_count", followedUsernames.size());  // Return the follow count
+        response.put("message", "Fetched following and followed users successfully.");
+        response.put("following_list", followedUsernames);  // Danh sách người mà user đang theo dõi
+        response.put("followed_list", followers.stream()  // Danh sách những người theo dõi
+                .map(follow -> follow.getFollower().getUsername())
+                .collect(Collectors.toList()));
+        response.put("following_count", followCount);  // Số lượng người mà user đang theo dõi
+        response.put("followed_count", followedCount);  // Số lượng người đang theo dõi user
+
         return response;
     }
 }
