@@ -2,11 +2,20 @@ package com.example.Social_Media_WhichApp.controller;
 
 import com.example.Social_Media_WhichApp.entity.User;
 import com.example.Social_Media_WhichApp.repository.UserRepository;
+import com.example.Social_Media_WhichApp.security.JwtUtil;
 import com.example.Social_Media_WhichApp.services.UserService;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
+import com.google.api.client.http.javanet.NetHttpTransport;
+import com.google.api.client.json.jackson2.JacksonFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 @CrossOrigin(origins = "http://localhost:3000")
@@ -19,6 +28,10 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private JwtUtil jwtUtil;
+
+
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -28,6 +41,7 @@ public class UserController {
     // Phương thức để xử lý đăng nhập của người dùng
     @PostMapping("/login") // Xử lý yêu cầu POST đến api/users/login
     public Map<String, Object> loginUser(@RequestParam String username, @RequestParam String password) {
+        System.out.println("Request received!");
         return userService.loginUser(username, password);
     }
 
@@ -52,10 +66,6 @@ public class UserController {
     @PostMapping("/reLogin")
     public Map<String, Object> reLogin(@RequestParam String token) throws Exception {
         return userService.reLogin(token);
-    }
-    @GetMapping("/oauth2/callback/google")
-    public Map<String, Object> googleCallback(OAuth2AuthenticationToken authentication) {
-        return userService.loginWithGoogle(authentication);
     }
 
 }

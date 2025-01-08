@@ -16,7 +16,6 @@ import java.util.Optional;
 
 @Component
 public class JwtUtil {
-
     private final TokenRepository tokenRepository;
     // Tạo key sử dụng với thuật toán HS512
     private Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);

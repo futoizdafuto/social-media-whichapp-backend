@@ -274,49 +274,7 @@ public class UserService {
     }
 
 
-    // Đăng nhập với Google
-    public Map<String, Object> loginWithGoogle(OAuth2AuthenticationToken authentication) {
-        Map<String, Object> response = new HashMap<>();
-        OAuth2User oauth2User = authentication.getPrincipal();
 
-        String email = oauth2User.getAttribute("email");
-        String name = oauth2User.getAttribute("name");
-        String avatarUrl = oauth2User.getAttribute("picture");
-
-        // Kiểm tra xem người dùng đã tồn tại trong DB chưa
-        User user = userRepository.findByEmail(email);
-        if (user == null) {
-            // Nếu người dùng chưa tồn tại, tạo người dùng mới
-            user = new User();
-            user.setEmail(email);
-            user.setName(name);
-            user.setAvatar_url(avatarUrl);
-            user = userRepository.save(user);
-        }
-
-        // Tạo JWT token cho người dùng
-        String tokenValue = jwtUtil.generateToken(user.getUsername());
-        Token token = new Token(tokenValue, LocalDateTime.now(),
-                LocalDateTime.now().plusSeconds(jwtUtil.getExpiration()), user);
-        tokenRepository.save(token);
-
-        // Trả về phản hồi đăng nhập thành công
-        Map<String, Object> userData = new HashMap<>();
-        userData.put("id", user.getUser_id());
-        userData.put("email", user.getEmail());
-        userData.put("name", user.getName());
-        userData.put("avatar", user.getAvatar_url());
-
-        response.put("login", Map.of(
-                "status", "success",
-                "message", "Google login successful",
-                "token", token,
-                "data", Map.of("user", userData),
-                "time", LocalDateTime.now()
-        ));
-
-        return response;
-    }
 
 
 

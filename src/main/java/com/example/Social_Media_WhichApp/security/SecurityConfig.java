@@ -29,15 +29,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/login",
                                 "/api/users/register" ,
                                 "/api/users/reLogin" ,
-                                "/api/users/oauth2/callback/google",
+                                "/api/users/oauth2/google" ,
                                 "/uploads/**").permitAll()
                         // Cho phép truy cập vào đăng nhập, đăng ký
 //                        .requestMatchers("/api/**").permitAll()
 
-                        .anyRequest().authenticated())
-                .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/api/users/oauth2/callback/google", true) // Chuyển hướng sau khi đăng nhập thành công
-                );
+                        .anyRequest().authenticated());
 
 
         // Thêm JwtAuthenticationFilter vào đây
