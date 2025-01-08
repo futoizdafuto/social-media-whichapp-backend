@@ -26,8 +26,16 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
 //                        .requestMatchers("/api/users/login", "/api/users/register" , "/uploads/**", "/api/**" , "/api/users/reLogin").permitAll()
-                        .requestMatchers("/api/users/login", "/api/users/register" , "/api/users/reLogin" ,"/uploads/**").permitAll()
+                        .requestMatchers("/api/users/login",
+                                "/api/users/register" ,
+                                "/api/users/reLogin" ,
+                                "/api/users/oauth2/google" ,
+                                "/uploads/**").permitAll()
+                        // Cho phép truy cập vào đăng nhập, đăng ký
+//                        .requestMatchers("/api/**").permitAll()
+
                         .anyRequest().authenticated());
+
 
         // Thêm JwtAuthenticationFilter vào đây
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

@@ -8,8 +8,17 @@ import com.example.Social_Media_WhichApp.repository.UserRepository;
 import com.example.Social_Media_WhichApp.security.EncryptPassword;
 import com.example.Social_Media_WhichApp.security.JwtUtil;
 import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -19,6 +28,10 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+
+    // ./auth/userinfo.email
+    // ./auth/userinfo.profile
+    // 87591578803-eag78ddgkvdiidtb84ji60v1a9o9vpl7.apps.googleusercontent.com
     @Autowired
     private UserRepository userRepository;
     @Autowired
@@ -259,6 +272,9 @@ public class UserService {
         }
         return response;
     }
+
+
+
 
 
 
