@@ -1,6 +1,7 @@
 package com.example.Social_Media_WhichApp.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.Date;
@@ -16,7 +17,8 @@ public class Post {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
-    @JsonBackReference
+    @JsonManagedReference
+//    @JsonBackReference
     private User user;
 
     private String content;
