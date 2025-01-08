@@ -1,5 +1,6 @@
 package com.example.Social_Media_WhichApp.controller;
 
+import com.example.Social_Media_WhichApp.entity.Role;
 import com.example.Social_Media_WhichApp.entity.Token;
 import com.example.Social_Media_WhichApp.entity.User;
 import com.example.Social_Media_WhichApp.repository.TokenRepository;
@@ -17,8 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 
 @RestController
 @RequestMapping("/api/users/oauth2")
@@ -129,15 +132,28 @@ public ResponseEntity<?> loginWithGoogle(@RequestHeader("Authorization") String 
 
         // Lấy thông tin email từ phản hồi Google
         String email = (String) userInfo.get("email");
-
+        Random random = new Random();
+        Role defaultRole = new Role();
+        defaultRole.setRole_id(2L); // Đặt id vai trò mặc định là 2
         // Kiểm tra người dùng đã tồn tại hay chưa
         User user = userRepository.findByEmail(email).orElseGet(() -> {
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setUsername(email);
+            newUser.setName("user "+random.nextInt());
+            newUser.setRole(defaultRole);
             userRepository.save(newUser);
             return newUser;
         });
+
+        Map<String, Object> userData = new HashMap<>(); // Tạo bản đồ cho dữ liệu người dùng
+        userData.put("id", user.getUser_id());
+        userData.put("username", user.getUsername());
+        userData.put("email", user.getEmail());
+        userData.put("name", user.getName());
+        userData.put("role", user.getRole().getRole_id());
+        userData.put("avatar_url", user.getAvatar_url());
+
         // Tạo token cho người dùng
         String tokenValue = jwtUtil.generateToken(user.getUsername());
         Token token = new Token(tokenValue, LocalDateTime.now(),
@@ -145,6 +161,7 @@ public ResponseEntity<?> loginWithGoogle(@RequestHeader("Authorization") String 
         tokenRepository.save(token);
         return ResponseEntity.ok(Map.of(
                 "Login", true,
+                "data", Map.of("user", userData),
                 "email", user.getEmail(),
                 "token", tokenValue
         ));

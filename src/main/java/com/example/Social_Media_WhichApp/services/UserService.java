@@ -253,7 +253,7 @@ public class UserService {
             userData.put("email", user.getEmail());
             userData.put("name", user.getName());
             userData.put("role", user.getRole().getRole_id());
-            userData.put("avatar", user.getAvatar_url());
+            userData.put("avatar_url", user.getAvatar_url());
 
             response.put("relogin", Map.of(
                     "Login", true,
