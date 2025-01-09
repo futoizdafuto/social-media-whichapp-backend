@@ -51,4 +51,8 @@ public class FollowController {
     public Map<String, Object> getFollows(@RequestParam String username) {
         return followService.getFollows(username);
     }
+    @GetMapping("/usernames")
+    public List<String> getAllUsernames() {
+        return followService.getAllUsernames();
+    }
 }

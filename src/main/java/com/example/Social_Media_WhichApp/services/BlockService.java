@@ -9,10 +9,7 @@ import com.example.Social_Media_WhichApp.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -79,10 +76,15 @@ public class BlockService {
         Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowed(blocker, blocked);
         existingFollow.ifPresent(follow -> followRepository.delete(follow));
 
+        // Kiểm tra nếu người bị block đang follow người block, thì cần phải xóa luôn khỏi bảng follow
+        Optional<Follow> followCheck = followRepository.findByFollowerAndFollowed(blocked, blocker);
+        followCheck.ifPresent(follow -> followRepository.delete(follow));
+
         response.put("status", "success");
         response.put("message", "You have blocked " + targetUsername);
         return response;
     }
+
 
     // Unblock một người dùng
     public Map<String, Object> unblockUser(String username, String targetUsername, String token) {
@@ -145,6 +147,32 @@ public class BlockService {
         response.put("status", "success");
         response.put("message", "Fetched blocked users successfully.");
         response.put("blocked_users", blockedUsernames);  // Danh sách người bị block
+
+        return response;
+    }
+    public Map<String, Object> getBlockerAndBlockedUsers() {
+        Map<String, Object> response = new HashMap<>();
+
+        // Lấy tất cả các block từ bảng Block
+        List<Block> blocks = blockRepository.findAll();
+
+        // Tạo một map để lưu các kết quả
+        Map<String, List<String>> blockerAndBlocked = new HashMap<>();
+
+        for (Block block : blocks) {
+            String blockerUsername = block.getBlocker().getUsername();
+            String blockedUsername = block.getBlocked().getUsername();
+
+            // Nếu blocker chưa có trong map, thêm một danh sách rỗng
+            blockerAndBlocked.putIfAbsent(blockerUsername, new ArrayList<>());
+
+            // Thêm blocked vào danh sách của blocker
+            blockerAndBlocked.get(blockerUsername).add(blockedUsername);
+        }
+
+        response.put("status", "success");
+        response.put("message", "Fetched blocker and blocked users successfully.");
+        response.put("blocker_and_blocked", blockerAndBlocked);
 
         return response;
     }
