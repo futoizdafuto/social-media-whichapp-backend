@@ -35,4 +35,8 @@ public class BlockController {
     public Map<String, Object> getBlockedUsers(@RequestParam String username) {
         return blockService.getBlocks(username);
     }
+    @GetMapping("/blockers")
+    public Map<String, Object> getBlockerAndBlockedUsers() {
+        return blockService.getBlockerAndBlockedUsers();
+    }
 }
