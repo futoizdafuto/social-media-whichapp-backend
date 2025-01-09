@@ -281,4 +281,8 @@ public class FollowService {
 
         return response;
     }
+    public List<String> getAllUsernames() {
+        return userRepository.findAllUsernames();  // Lấy danh sách username
+    }
+
 }
