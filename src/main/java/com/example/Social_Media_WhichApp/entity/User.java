@@ -35,6 +35,8 @@ public class User {
     @JoinColumn(name = "role_id")
     @JsonManagedReference //để quản lý quan hệ của Role
     private Role role;
+    @Column(name = "is_private", nullable = false)
+    private boolean isPrivate = false;  // Default value set to false (public)
 
     public User() {
     }
@@ -43,7 +45,7 @@ public class User {
         this.user_id = id;
     }
 
-    public User(Long id, String avatar_url, String username, String password, String email, String name, List<Post> posts, Role role) {
+    public User(Long id, String avatar_url, String username, String password, String email, String name, List<Post> posts, Role role, boolean isPrivate) {
         this.user_id = id;
         this.avatar_url = avatar_url;
         this.username = username;
@@ -52,6 +54,7 @@ public class User {
         this.name = name;
         this.posts = posts;
         this.role = role;
+        this.isPrivate = isPrivate;
     }
 
     public Role getRole() {
@@ -60,6 +63,14 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+    }
+    // Getter and Setter for isPrivate
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    public void setPrivate(boolean isPrivate) {
+        this.isPrivate = isPrivate;
     }
 
     public Long getUser_id() {
