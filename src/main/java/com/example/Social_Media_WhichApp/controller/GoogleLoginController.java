@@ -142,6 +142,7 @@ public ResponseEntity<?> loginWithGoogle(@RequestHeader("Authorization") String 
             newUser.setUsername(email);
             newUser.setName("user "+random.nextInt());
             newUser.setRole(defaultRole);
+            newUser.setPrivate(false);
             userRepository.save(newUser);
             return newUser;
         });
