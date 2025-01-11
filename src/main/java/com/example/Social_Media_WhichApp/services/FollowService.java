@@ -61,16 +61,42 @@ public class FollowService {
             return response;
         }
 
-        // Thêm quan hệ follow mới vào cơ sở dữ liệu
-        Follow follow = new Follow();
-        follow.setFollower(follower);
-        follow.setFollowed(followed);
-        followRepository.save(follow);
+        // Lấy trạng thái của người được theo dõi (private hay public)
+        Map<String, Object> statusResponse = userService.getUserStatus(targetUsername);
 
-        response.put("status", "success");
-        response.put("message", "You are now following " + targetUsername);
+        // Debug: Kiểm tra giá trị của statusResponse
+        System.out.println("Status Response: " + statusResponse);
+
+        if ("success".equals(statusResponse.get("status"))) {
+            boolean isPrivate = (boolean) statusResponse.get("private");
+
+            // Debug: Kiểm tra giá trị của isPrivate
+            System.out.println("Is Private: " + isPrivate);
+
+            // Thêm quan hệ follow mới vào cơ sở dữ liệu
+            Follow follow = new Follow();
+            follow.setFollower(follower);
+            follow.setFollowed(followed);
+
+            // Cập nhật giá trị của isWaiting tùy vào trạng thái private/public
+            follow.setWaiting(isPrivate);  // Nếu private thì là true (1), nếu public thì là false (0)
+
+            // Debug: Kiểm tra giá trị của follow.isWaiting trước khi lưu
+            System.out.println("isWaiting: " + follow.isWaiting());
+
+            followRepository.save(follow);
+
+            response.put("status", "success");
+            response.put("message", "You are now following " + targetUsername);
+        } else {
+            response.put("status", "error");
+            response.put("message", "Unable to fetch status for user " + targetUsername);
+        }
+
         return response;
     }
+
+
 
     // Theo dõi nhiều người dùng (multiple user follow)
     public Map<String, Object> followMultipleUsers(String username, List<String> targetUsernames, String token) {
@@ -254,33 +280,110 @@ public class FollowService {
         // Lấy thông tin người dùng từ username
         User user = userRepository.findByUsername(username);
 
+        // Lấy trạng thái private của người dùng
+        Map<String, Object> userStatus = userService.getUserStatus(username);
+        boolean isPrivate = (boolean) userStatus.get("private");
+
         // Lấy tất cả người dùng mà user này đang follow
         List<Follow> follows = followRepository.findByFollower(user);
 
-        // Chuyển danh sách Follow thành danh sách tên người dùng được follow (following)
+        // Lọc các tài khoản mà is_waiting = 0, tức là những người mà không trong trạng thái chờ
         List<String> followedUsernames = follows.stream()
+                .filter(follow -> !follow.isWaiting()) // Chỉ lấy những người không trong trạng thái waiting
                 .map(follow -> follow.getFollowed().getUsername())
                 .collect(Collectors.toList());
 
-        // Lấy số lượng người mà user này đang follow
-        int followCount = followedUsernames.size();
-
-        // Lấy số lượng người theo dõi user (followed_count) bằng cách đếm số dòng có followed_id là user.id
+        // Lấy tất cả người đang theo dõi user này (followed list)
         List<Follow> followers = followRepository.findByFollowed(user);
-        int followedCount = followers.size();
+
+        // Lọc danh sách những người theo dõi user, loại bỏ các mục có is_waiting = 1
+        List<String> followerUsernames = followers.stream()
+                .filter(follow -> !follow.isWaiting()) // Loại bỏ người theo dõi có trạng thái waiting
+                .map(follow -> follow.getFollower().getUsername())
+                .collect(Collectors.toList());
+
+        // Nếu user đang ở trạng thái private, cần loại bỏ thêm các mục không phù hợp
+        if (isPrivate) {
+            follows.stream()
+                    .filter(Follow::isWaiting) // Lấy danh sách các mục đang ở trạng thái waiting
+                    .map(follow -> follow.getFollowed().getUsername())
+                    .forEach(followedUsernames::remove); // Loại bỏ khỏi danh sách following
+        }
+
+        // Tính số lượng người đang follow và được follow
+        int followCount = followedUsernames.size();
+        int followedCount = followerUsernames.size();
 
         // Trả về kết quả
         response.put("status", "success");
         response.put("message", "Fetched following and followed users successfully.");
-        response.put("following_list", followedUsernames);  // Danh sách người mà user đang theo dõi
-        response.put("followed_list", followers.stream()  // Danh sách những người theo dõi
-                .map(follow -> follow.getFollower().getUsername())
-                .collect(Collectors.toList()));
-        response.put("following_count", followCount);  // Số lượng người mà user đang theo dõi
-        response.put("followed_count", followedCount);  // Số lượng người đang theo dõi user
+        response.put("following_list", followedUsernames); // Danh sách người mà user đang theo dõi
+        response.put("followed_list", followerUsernames); // Danh sách những người theo dõi user
+        response.put("following_count", followCount); // Số lượng người mà user đang theo dõi
+        response.put("followed_count", followedCount); // Số lượng người đang theo dõi user
 
         return response;
     }
+    public List<String> getWaitingUsers(String username) {
+        // Kiểm tra xem người dùng có tồn tại không
+        if (!checkUserExists(username)) {
+            throw new IllegalArgumentException("User " + username + " does not exist.");
+        }
+
+        // Lấy danh sách tài khoản đang chờ duyệt
+        return followRepository.findWaitingUsersByFollowedUsername(username);
+    }
+    public Map<String, Object> updateFollowStatus(String username, String targetUsername, String token) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra xem người dùng có đăng nhập không
+        if (!isUserLoggedIn(token)) {
+            response.put("status", "error");
+            response.put("message", "You need to log in to update follow status.");
+            return response;
+        }
+
+        // Kiểm tra xem người dùng có tồn tại không
+        if (!checkUserExists(username) || !checkUserExists(targetUsername)) {
+            response.put("status", "error");
+            response.put("message", "User " + (checkUserExists(username) ? targetUsername : username) + " does not exist.");
+            return response;
+        }
+
+        // Lấy thông tin người dùng
+        User followed = userRepository.findByUsername(username);  // Người được theo dõi
+        User follower = userRepository.findByUsername(targetUsername);  // Người theo dõi
+
+        // Tìm quan hệ Follow giữa user và targetUser
+        Optional<Follow> existingFollow = followRepository.findByFollowerAndFollowed(follower, followed);
+
+        // Kiểm tra nếu không có mối quan hệ follow nào giữa 2 người này
+        if (existingFollow.isEmpty()) {
+            response.put("status", "error");
+            response.put("message", "There is no follow relationship between " + username + " and " + targetUsername + ".");
+            return response;
+        }
+
+        Follow follow = existingFollow.get();
+
+        // Kiểm tra nếu trạng thái is_waiting = 1 thì thay đổi thành 0, nếu là 0 thì không thay đổi
+        if (follow.isWaiting()) {
+            follow.setWaiting(false);  // Đặt trạng thái is_waiting = 0
+            followRepository.save(follow);
+            response.put("status", "success");
+            response.put("message", "The follow status has been updated to 'approved' (is_waiting = 0).");
+        } else {
+            response.put("status", "success");
+            response.put("message", "The follow status is already 'approved' (is_waiting = 0). No changes made.");
+        }
+
+        return response;
+    }
+
+
+
+
+
     public List<String> getAllUsernames() {
         return userRepository.findAllUsernames();  // Lấy danh sách username
     }
