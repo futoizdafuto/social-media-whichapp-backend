@@ -69,6 +69,20 @@ public class FollowController {
         }
         return response;
     }
+    @GetMapping("/waitingused")
+    public Map<String, Object> waitingUsed(@RequestParam String username) {
+        Map<String, Object> response = new HashMap<>();
+        try {
+            // Gọi service để lấy danh sách các tài khoản đang follow và có is_waiting = 1
+            List<String> waitingUsers = followService.waitingUsed(username);
+            response.put("status", "success");
+            response.put("waiting_usered", waitingUsers);
+        } catch (IllegalArgumentException e) {
+            response.put("status", "error");
+            response.put("message", e.getMessage());
+        }
+        return response;
+    }
     @PostMapping("/updatestatus")
     public Map<String, Object> updateFollowStatus(@RequestParam String username,
                                                   @RequestParam String targetUsername,
