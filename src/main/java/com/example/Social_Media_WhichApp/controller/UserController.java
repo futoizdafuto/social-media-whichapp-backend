@@ -67,11 +67,11 @@ public class UserController {
     public Map<String, Object> reLogin(@RequestParam String token) throws Exception {
         return userService.reLogin(token);
     }
+
     @PostMapping("/verify-otp")
     public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         String otp = request.get("otp");
-
         if (email == null || otp == null) {
             return ResponseEntity.badRequest().body(Map.of(
                     "status", "error",
@@ -95,4 +95,26 @@ public class UserController {
             ));
         }
     }
+
+    // Phương thức để set private cho tài khoản
+    @PostMapping("/updatePrivate")
+    public ResponseEntity<Map<String, Object>> updatePrivate(@RequestParam String username) {
+        Map<String, Object> response = userService.updatePrivate(username);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    // Phương thức để set public cho tài khoản
+    @PostMapping("/updatePublic")
+    public ResponseEntity<Map<String, Object>> updatePublic(@RequestParam String username) {
+        Map<String, Object> response = userService.updatePublic(username);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+    @GetMapping("/status")
+    public ResponseEntity<Map<String, Object>> getUserStatus(@RequestParam String username) {
+        Map<String, Object> response = userService.getUserStatus(username);
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+
+
 }

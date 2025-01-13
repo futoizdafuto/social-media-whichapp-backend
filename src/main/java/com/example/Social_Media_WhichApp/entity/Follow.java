@@ -1,8 +1,11 @@
 package com.example.Social_Media_WhichApp.entity;
-import jakarta.persistence.*;
-@Entity
 
+import jakarta.persistence.*;
+import java.util.Date;
+
+@Entity
 public class Follow {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -15,8 +18,20 @@ public class Follow {
     @JoinColumn(name = "followed_id")  // Khóa ngoại cho người bị theo dõi
     private User followed;
 
-//    @Column(name = "user_id")
-//    private Long userId;  // Thuộc tính user_id thêm vào
+    @Column(name = "created_at", nullable = false, updatable = false)
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdAt;
+
+    @Column(name = "is_waiting", nullable = false)
+    private boolean isWaiting ;
+
+    // Constructor mặc định
+    public Follow() {
+        // Khởi tạo createdAt với thời gian hiện tại khi tạo đối tượng Follow
+        this.createdAt = new Date();
+        // isWaiting mặc định là false
+        this.isWaiting = false;
+    }
 
     // Getters and Setters
     public Long getId() {
@@ -43,11 +58,24 @@ public class Follow {
         this.followed = followed;
     }
 
-//    public Long getUserId() {
-//        return userId;
-//    }
-//
-//    public void setUserId(Long userId) {
-//        this.userId = userId;
-//    }
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public boolean isWaiting() {
+        return isWaiting;
+    }
+
+    public void setWaiting(boolean isWaiting) {
+        this.isWaiting = isWaiting;
+    }
+
+    // Hàm để cập nhật trạng thái isWaiting
+    public void setWaitingToYes() {
+        this.isWaiting = true;
+    }
 }

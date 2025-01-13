@@ -129,6 +129,13 @@ public class UserService {
             return response;
         }
 
+//<<<<<<< HEAD
+//=======
+//        newUser.setEmail(email);
+//        newUser.setName(name);
+//        newUser.setRole(defaultRole); // Thiết lập vai trò cho người dùng
+//        newUser.setPrivate(false); // Thiết lập cho người dùng trạng thái là public
+//>>>>>>> 249ccebb112faae3b43caf10aeeee0454a8b1328
 
         // Tạo mã OTP
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
@@ -217,6 +224,7 @@ public class UserService {
         newUser.setEmail(pendingUser.getEmail());
         newUser.setName(pendingUser.getName());
         newUser.setRole(defaultRole);
+        newUser.setPrivate(false); // Thiết lập cho người dùng trạng thái là public
 
         // Lưu User và xóa PendingUser
         userRepository.save(newUser);
@@ -391,6 +399,55 @@ public class UserService {
                     "status", "error",
                     "message", "Invalid or expired token"
             ));
+        }
+        return response;
+    }
+     public Map<String, Object> updatePrivate(String username) {
+        Map<String, Object> response = new HashMap<>();
+        User user = userRepository.findByUsername(username);
+
+        if (user != null) {
+            user.setPrivate(true);  // Set the user's profile to private
+            userRepository.save(user);  // Save the updated user
+            response.put("status", "success");
+            response.put("message", "User " + username + " profile updated to private");
+        } else {
+            response.put("status", "error");
+            response.put("message", "User " + username + " not found");
+        }
+        return response;
+    }
+
+    // Update user privacy status to public (0)
+    public Map<String, Object> updatePublic(String username) {
+        Map<String, Object> response = new HashMap<>();
+        User user = userRepository.findByUsername(username);
+
+        if (user != null) {
+            user.setPrivate(false);  // Set the user's profile to public
+            userRepository.save(user);  // Save the updated user
+            response.put("status", "success");
+            response.put("message", "User " + username + " profile updated to public");
+        } else {
+            response.put("status", "error");
+            response.put("message", "User " + username + " not found");
+        }
+        return response;
+    }
+    // Phương thức lấy trạng thái của người dùng
+    public Map<String, Object> getUserStatus(String username) {
+        Map<String, Object> response = new HashMap<>();
+        User user = userRepository.findByUsername(username);
+
+        if (user != null) {
+            // Trả về trạng thái (private hoặc public)
+            response.put("status", "success");
+            response.put("message", "User status fetched successfully.");
+            response.put("username", username);
+            response.put("private", user.isPrivate());  // True nếu là private, false nếu public
+        } else {
+            response.put("status", "error");
+            response.put("message", "User " + username + " not found");
         }
         return response;
     }
