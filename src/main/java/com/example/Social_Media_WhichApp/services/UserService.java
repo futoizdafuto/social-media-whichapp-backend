@@ -1,8 +1,10 @@
 package com.example.Social_Media_WhichApp.services;
 
+import com.example.Social_Media_WhichApp.entity.PendingUser;
 import com.example.Social_Media_WhichApp.entity.Role;
 import com.example.Social_Media_WhichApp.entity.Token;
 import com.example.Social_Media_WhichApp.entity.User;
+import com.example.Social_Media_WhichApp.repository.PendingUserRepository;
 import com.example.Social_Media_WhichApp.repository.TokenRepository;
 import com.example.Social_Media_WhichApp.repository.UserRepository;
 import com.example.Social_Media_WhichApp.security.EncryptPassword;
@@ -15,6 +17,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -38,7 +41,13 @@ public class UserService {
     private JwtUtil jwtUtil;
 
     @Autowired
+    private MailService mailService;
+
+    @Autowired
     private TokenRepository tokenRepository;
+
+    @Autowired
+    private PendingUserRepository pendingUserRepository;
 
     @Autowired
     public UserService(UserRepository userRepository) {
@@ -47,6 +56,41 @@ public class UserService {
 
     public List<User> getAllUser(){
         return userRepository.findAll();
+    }
+
+    /**
+     * Scheduled task to update isActivated status for expired OTPs
+     */
+    @Scheduled(fixedRate = 1000) // Chạy mỗi giây
+    @Transactional
+    public void updateExpiredPendingUsers() {
+        // Lấy thời gian hiện tại
+        LocalDateTime now = LocalDateTime.now();
+
+        // Cập nhật isActivated thành false nếu OTP đã hết hạn
+        List<PendingUser> expiredUsers = pendingUserRepository.findAllByOtpExpirationTimeBeforeAndIsActivatedTrue(now);
+        for (PendingUser user : expiredUsers) {
+            user.setActivated(false);
+            pendingUserRepository.save(user);
+        }
+
+        System.out.println("Updated expired pending users at: " + now);
+    }
+
+    /**
+     * Scheduled task to delete pending users older than 1 hour with isActivated = false
+     */
+    @Scheduled(fixedRate = 3600000) // Chạy mỗi giờ
+    @Transactional
+    public void deleteInactivePendingUsers() {
+        // Lấy thời gian hiện tại
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime oneHourAgo = now.minusHours(1);
+
+        // Xóa các user trong PendingUser có isActivated = false và quá thời gian 1 tiếng
+        pendingUserRepository.deleteByIsActivatedFalseAndOtpExpirationTimeBefore(oneHourAgo);
+
+        System.out.println("Deleted inactive pending users at: " + now);
     }
 
 
@@ -76,48 +120,133 @@ public class UserService {
             return response;
         }
 
-        // Tạo một đối tượng Role với id = 2
-        Role defaultRole = new Role();
-        defaultRole.setRole_id(2L); // Đặt id vai trò mặc định là 2
-
-        // Tạo đối tượng người dùng mới
-        User newUser = new User();
-        newUser.setUsername(username);
-        try {
-            newUser.setPassword(EncryptPassword.encrypt(password)); // Mã hóa mật khẩu trước khi lưu
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.put("status", "error");
-            response.put("message", "Encryption error");
+        // Kiểm tra email đã tồn tại
+        if (userRepository.findByEmail(email).isPresent()) {
+            response.put("register", Map.of(
+                    "status", "error",
+                    "message", "Email already exists"
+            ));
             return response;
         }
 
-        newUser.setEmail(email);
-        newUser.setName(name);
-        newUser.setRole(defaultRole); // Thiết lập vai trò cho người dùng
+//<<<<<<< HEAD
+//=======
+//        newUser.setEmail(email);
+//        newUser.setName(name);
+//        newUser.setRole(defaultRole); // Thiết lập vai trò cho người dùng
+//        newUser.setPrivate(false); // Thiết lập cho người dùng trạng thái là public
+//>>>>>>> 249ccebb112faae3b43caf10aeeee0454a8b1328
+
+        // Tạo mã OTP
+        String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
+        LocalDateTime otpExpiry = LocalDateTime.now().plusMinutes(2);
+
+        // Tìm bản ghi email đã tồn tại trong PendingUser
+        Optional<PendingUser> existingPendingUser = pendingUserRepository.findByEmail(email);
+
+        // Lưu vào PendingUser hoặc ghi đè nếu tồn tại
+        PendingUser pendingUser = existingPendingUser.orElse(new PendingUser());
+        pendingUser.setUsername(username);
+        try {
+            pendingUser.setPassword(EncryptPassword.encrypt(password)); // Mã hóa mật khẩu
+        } catch (Exception e) {
+            response.put("register", Map.of(
+            "status", "error",
+            "message", "Encryption error"
+            ));
+            return response;
+        }
+        pendingUser.setEmail(email);
+        pendingUser.setName(name);
+        pendingUser.setOtp(otp);
+        pendingUser.setOtpExpirationTime(otpExpiry);
+        pendingUser.setActivated(true);
+
+        pendingUserRepository.save(pendingUser);
+
+        mailService.sendOtp(email, otp);
+        //        // Cập nhật phản hồi
+        response.put("register", Map.of(
+                "status", "success",
+                "email", email,
+                "message", "Please authenticate your gmail to complete the registration procedure."
+        ));
+
+        return response; // Trả về phản hồi
+    }
+
+
+    public Map<String, Object> verifyOtp(String email, String otp) {
+        Map<String, Object> response = new HashMap<>();
+
+        // Tìm PendingUser bằng email
+        Optional<PendingUser> optionalPendingUser = pendingUserRepository.findByEmail(email);
+
+        if (optionalPendingUser.isEmpty()) {
+            response.put("status", "error");
+            response.put("message", "Email does not exist or is invalid.");
+            return response;
+        }
+
+        PendingUser pendingUser = optionalPendingUser.get();
+
+        // Kiểm tra nếu tài khoản chưa kích hoạt
+        if (!pendingUser.isActivated()) {
+            response.put("status", "error");
+            response.put("message", "OTP has expired. Please register again.");
+            return response;
+        }
+
+        // Kiểm tra OTP
+        if (!pendingUser.getOtp().equals(otp)) {
+            response.put("status", "error");
+            response.put("message", "OTP is not valid.");
+            return response;
+        }
+
+        // Kiểm tra thời gian hết hạn OTP
+        if (pendingUser.getOtpExpirationTime().isBefore(LocalDateTime.now())) {
+            pendingUserRepository.delete(pendingUser); // Xóa bản ghi nếu OTP hết hạn
+            response.put("status", "error");
+            response.put("message", "OTP has expired. Please try again.");
+            return response;
+        }
+
+        // Tạo vai trò mặc định
+        Role defaultRole = new Role();
+        defaultRole.setRole_id(2L); // Đặt id vai trò mặc định là 2
+
+
+        // Chuyển từ PendingUser sang User
+        User newUser = new User();
+        newUser.setUsername(pendingUser.getUsername());
+        newUser.setPassword(pendingUser.getPassword());
+        newUser.setEmail(pendingUser.getEmail());
+        newUser.setName(pendingUser.getName());
+        newUser.setRole(defaultRole);
         newUser.setPrivate(false); // Thiết lập cho người dùng trạng thái là public
 
-        // Lưu người dùng mới vào cơ sở dữ liệu
+        // Lưu User và xóa PendingUser
         userRepository.save(newUser);
+        pendingUserRepository.delete(pendingUser);
 
-        // Tạo phản hồi thành công
-        Map<String, Object> userData = new HashMap<>(); // Bản đồ cho thông tin người dùng
-        userData.put("user_id", newUser.getUser_id());
+        // Phản hồi thành công
+        Map<String, Object> userData = new HashMap<>();
         userData.put("username", newUser.getUsername());
         userData.put("email", newUser.getEmail());
         userData.put("name", newUser.getName());
         userData.put("role", newUser.getRole().getRole_id());
 
-        // Cập nhật phản hồi
-        response.put("register", Map.of(
-                "status", "success",
-                "message", "User registered successfully",
-                "data", Map.of("user", userData),
-                "time", LocalDateTime.now()
-        ));
+        response.put("status", "success");
+        response.put("message", "OTP successfully authenticated. User registration successful.");
+        response.put("data", Map.of("user", userData));
 
-        return response; // Trả về phản hồi
+        return response;
     }
+
+
+
+
 
     // Đăng nhập bằng username
     public Map<String, Object> loginUser(String username, String password) {

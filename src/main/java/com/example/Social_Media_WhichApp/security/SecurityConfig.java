@@ -29,6 +29,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/login",
                                 "/api/users/register" ,
                                 "/api/users/reLogin" ,
+                                "/api/users/verify-otp" ,
                                 "/api/users/oauth2/google" ,
                                 "/uploads/**").permitAll()
                         // Cho phép truy cập vào đăng nhập, đăng ký
