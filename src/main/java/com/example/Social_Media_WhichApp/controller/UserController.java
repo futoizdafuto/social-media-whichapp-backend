@@ -67,5 +67,32 @@ public class UserController {
     public Map<String, Object> reLogin(@RequestParam String token) throws Exception {
         return userService.reLogin(token);
     }
+    @PostMapping("/verify-otp")
+    public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        String otp = request.get("otp");
 
+        if (email == null || otp == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Email and OTP are required"
+            ));
+        }
+
+        try {
+            Map<String, Object> response = userService.verifyOtp(email, otp);
+            if ("success".equals(response.get("status"))) {
+                return ResponseEntity.ok(response);
+            } else {
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(response);
+            }
+        } catch (Exception e) {
+            // Log lỗi để debug
+            System.err.println("OTP verification error: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "status", "error",
+                    "message", "Server error when verifying OTP"
+            ));
+        }
+    }
 }
