@@ -310,6 +310,15 @@ public class FollowService {
                     .forEach(followedUsernames::remove); // Loại bỏ khỏi danh sách following
         }
 
+        // Kiểm tra xem có những người nào đang chờ (is_waiting = 1) trong following_list, nếu có, loại bỏ chúng
+        followedUsernames = followedUsernames.stream()
+                .filter(followedUsername -> {
+                    // Lọc các tài khoản mà có trạng thái "is_waiting = 1" trong bảng follow
+                    return !follows.stream()
+                            .anyMatch(follow -> follow.getFollowed().getUsername().equals(followedUsername) && follow.isWaiting());
+                })
+                .collect(Collectors.toList());
+
         // Tính số lượng người đang follow và được follow
         int followCount = followedUsernames.size();
         int followedCount = followerUsernames.size();
@@ -324,6 +333,7 @@ public class FollowService {
 
         return response;
     }
+
     public List<String> getWaitingUsers(String username) {
         // Kiểm tra xem người dùng có tồn tại không
         if (!checkUserExists(username)) {
@@ -379,6 +389,25 @@ public class FollowService {
 
         return response;
     }
+    public List<String> waitingUsed(String username) {
+        // Kiểm tra xem người dùng có tồn tại không
+        if (!checkUserExists(username)) {
+            throw new IllegalArgumentException("User " + username + " does not exist.");
+        }
+
+        // Lấy danh sách các Follow có trạng thái is_waiting = 1
+        List<Follow> follows = followRepository.findByFollowerUsernameAndIsWaitingTrue(username);
+
+        // Trả về danh sách tên người dùng (followed)
+        List<String> waitingUsers = follows.stream()
+                .map(follow -> follow.getFollowed().getUsername())
+                .collect(Collectors.toList());
+
+        return waitingUsers;
+    }
+
+    // Kiểm tra người dùng có tồn tại trong hệ thống
+
 
 
 
