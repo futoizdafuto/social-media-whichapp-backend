@@ -74,7 +74,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // Kế th�
     }
 
     private boolean isPublicRequest(String path) {
-        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.startsWith("/uploads/") ;
+        return path.equals("/api/users/login")
+                || path.equals("/api/users/register")
+                || path.equals("/api/users/oauth2/google")
+                || path.equals("/api/users/verify_otp")
+                || path.equals("/api/users/verify_otp_forgot_password")
+                || path.equals("/api/users/forgot_password")
+                || path.equals("/api/users/update_password")
+                || path.startsWith("/uploads/");
+
 //        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.startsWith("/uploads/") || path.startsWith("/api/");
     }
     // Kiểm tra yêu cầu DELETE
@@ -91,7 +99,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // Kế th�
 
     // Phương thức để kiểm tra nếu yêu cầu đến từ các endpoint không yêu cầu token hoặc từ endpoint /register khi người dùng đã có token hợp lệ
     private boolean isLoginOrRegisterRequest(String path) {
-        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.equals("/api/users/reLogin") || path.startsWith("/uploads/");
+        return path.equals("/api/users/login")
+                || path.equals("/api/users/register")
+                || path.equals("/api/users/reLogin")
+                || path.equals("/api/users/oauth2/google")
+                || path.equals("/api/users/verify_otp")
+                || path.equals("/api/users/verify_otp_forgot_password")
+                || path.equals("/api/users/forgot_password")
+                || path.equals("/api/users/update_password")
+                || path.startsWith("/uploads/");
 //        return path.equals("/api/users/login") || path.equals("/api/users/register") || path.equals("/upload/") || path.equals("/api/")|| path.equals("/api/users/reLogin");
 
     }

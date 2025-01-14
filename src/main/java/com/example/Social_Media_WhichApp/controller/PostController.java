@@ -53,7 +53,6 @@ public class PostController {
 
     @Autowired
     private PostService postService;
-
     @Autowired
     private FileStorageService fileStorageService;
 
@@ -221,6 +220,99 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error deleting post: " + e.getMessage());
         }
+    }
+    @GetMapping("/by-user")
+    public ResponseEntity<List<Map<String, Object>>> getPostsByUsername(@RequestParam String username) {
+        // Lấy tất cả các bài post của người dùng theo username
+        List<Post> posts = postService.getPostsByUsername(username);
+
+        // Kiểm tra nếu không có bài post nào của người dùng
+        if (posts.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonList(Collections.singletonMap("message", "No posts found for this user")));
+        }
+
+        // Tạo danh sách phản hồi
+        List<Map<String, Object>> responseList = new ArrayList<>();
+        for (Post post : posts) {
+            Map<String, Object> postResponse = new HashMap<>();
+            postResponse.put("post_id", post.getPost_id());
+            postResponse.put("content", post.getContent());
+            postResponse.put("mediaList", post.getMediaList());
+            postResponse.put("created_at", post.getCreated_at());
+
+            // Thêm thông tin User vào response
+            if (post.getUser() != null) {
+                Map<String, Object> userResponse = new HashMap<>();
+                userResponse.put("user_id", post.getUser().getUser_id());
+                userResponse.put("username", post.getUser().getUsername());
+                postResponse.put("user", userResponse);
+            }
+
+            responseList.add(postResponse);
+        }
+
+        // Trả về danh sách bài post của người dùng
+        return new ResponseEntity<>(responseList, HttpStatus.OK);
+    }
+    @GetMapping("/sizeby-user")
+    public ResponseEntity<Map<String, Object>> getPostsCountByUsername(@RequestParam String username) {
+        // Lấy tất cả các bài post của người dùng theo username
+        List<Post> posts = postService.getPostsByUsername(username);
+
+        // Tạo một Map để chứa dữ liệu phản hồi
+        Map<String, Object> response = new HashMap<>();
+
+        // Kiểm tra nếu không có bài post nào của người dùng
+        if (posts.isEmpty()) {
+            response.put("status", "error");
+            response.put("message", "No posts found for this user");
+            response.put("post_count", 0);  // Trả về số lượng bài viết là 0 nếu không có bài post nào
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+
+        // Trả về số lượng bài viết
+        response.put("status", "success");
+        response.put("post_count", posts.size());  // Sử dụng posts.size() để lấy số lượng bài viết
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+    @GetMapping("/image")
+    public ResponseEntity<List<Map<String, Object>>> getImagesByUsername(@RequestParam String username) {
+        // Lấy tất cả các bài post của người dùng theo username
+        List<Post> posts = postService.getPostsByUsername(username);
+
+        // Kiểm tra nếu không có bài post nào của người dùng
+        if (posts.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Collections.singletonList(Collections.singletonMap("message", "No posts found for this user")));
+        }
+
+        // Tạo danh sách để lưu trữ các ảnh của người dùng
+        List<Map<String, Object>> imageList = new ArrayList<>();
+
+        // Duyệt qua tất cả các bài viết để lấy URL ảnh
+        for (Post post : posts) {
+            // Lấy danh sách media của bài viết
+            List<Media> mediaList = post.getMediaList();
+
+            if (mediaList != null && !mediaList.isEmpty()) {
+                for (Media media : mediaList) {
+                    if ("image".equals(media.getType())) { // Chỉ lấy ảnh
+                        Map<String, Object> imageResponse = new HashMap<>();
+                        imageResponse.put("image_url", media.getUrl());
+                        imageResponse.put("created_at", post.getCreated_at());
+                        imageList.add(imageResponse);
+                    }
+                }
+            }
+        }
+
+        // Sắp xếp danh sách ảnh theo thứ tự created_at từ mới nhất đến cũ nhất
+        imageList.sort((a, b) -> ((Date) b.get("created_at")).compareTo((Date) a.get("created_at")));
+
+        // Trả về danh sách các ảnh đã sắp xếp
+        return new ResponseEntity<>(imageList, HttpStatus.OK);
     }
 
     @PostMapping("/{postId}/like")
