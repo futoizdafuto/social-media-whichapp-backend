@@ -1,8 +1,12 @@
 package com.example.Social_Media_WhichApp.controller;
 
+import com.example.Social_Media_WhichApp.entity.Auth;
 import com.example.Social_Media_WhichApp.entity.User;
+import com.example.Social_Media_WhichApp.repository.AuthRepository;
 import com.example.Social_Media_WhichApp.repository.UserRepository;
 import com.example.Social_Media_WhichApp.security.JwtUtil;
+import com.example.Social_Media_WhichApp.services.AuthService;
+import com.example.Social_Media_WhichApp.services.MailService;
 import com.example.Social_Media_WhichApp.services.UserService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -14,10 +18,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
+
 @CrossOrigin(origins = "http://localhost:8443")
 @RestController
 @RequestMapping("api/users")
@@ -30,7 +33,12 @@ public class UserController {
     private UserService userService;
     @Autowired
     private JwtUtil jwtUtil;
-
+    @Autowired
+    private AuthService authService;
+    @Autowired
+    private MailService mailService;
+    @Autowired
+    private AuthRepository authRepository;
 
 
     @GetMapping
@@ -68,7 +76,7 @@ public class UserController {
         return userService.reLogin(token);
     }
 
-    @PostMapping("/verify-otp")
+    @PostMapping("/verify_otp")
     public ResponseEntity<?> verifyOtp(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         String otp = request.get("otp");
@@ -80,7 +88,7 @@ public class UserController {
         }
 
         try {
-            Map<String, Object> response = userService.verifyOtp(email, otp);
+            Map<String, Object> response = userService.verifyOtpRegister(email, otp);
             if ("success".equals(response.get("status"))) {
                 return ResponseEntity.ok(response);
             } else {
@@ -115,6 +123,33 @@ public class UserController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @PostMapping("/forgot_password")
+    public ResponseEntity<?> forgotPassword(@RequestParam Map<String, String> request) {
+        String email = request.get("email");
+        return userService.handleForgotPassword(email);
+    }
+
+    @PostMapping("/verify_otp_forgot_password")
+    public ResponseEntity<?> verifyOtps(@RequestParam Map<String, String> request) {
+        String email = request.get("email");
+        String otp = request.get("otp");
+        return userService.handleVerifyOtp(email, otp);
+    }
+    @PostMapping("/update_password")
+    public ResponseEntity<Map<String, Object>> updatePass(@RequestParam Map<String, String> request) {
+        String email = request.get("email");
+        String password = request.get("password");
+
+        // Gọi service để xử lý logic cập nhật password
+        Map<String, Object> response = userService.updatePassword(email, password);
+
+        // Tạo ResponseEntity từ Map
+        if ("success".equals(response.get("status"))) {
+            return ResponseEntity.ok(response); // Trả về 200 OK nếu thành công
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response); // Trả về 401 Unauthorized nếu lỗi
+        }
+    }
 
 
 }

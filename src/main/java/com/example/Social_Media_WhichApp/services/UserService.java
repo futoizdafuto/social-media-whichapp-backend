@@ -1,9 +1,7 @@
 package com.example.Social_Media_WhichApp.services;
 
-import com.example.Social_Media_WhichApp.entity.PendingUser;
-import com.example.Social_Media_WhichApp.entity.Role;
-import com.example.Social_Media_WhichApp.entity.Token;
-import com.example.Social_Media_WhichApp.entity.User;
+import com.example.Social_Media_WhichApp.entity.*;
+import com.example.Social_Media_WhichApp.repository.AuthRepository;
 import com.example.Social_Media_WhichApp.repository.PendingUserRepository;
 import com.example.Social_Media_WhichApp.repository.TokenRepository;
 import com.example.Social_Media_WhichApp.repository.UserRepository;
@@ -13,10 +11,7 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -39,7 +34,10 @@ public class UserService {
     private UserRepository userRepository;
     @Autowired
     private JwtUtil jwtUtil;
-
+    @Autowired
+    private AuthService authService;
+    @Autowired
+    private AuthRepository authRepository;
     @Autowired
     private MailService mailService;
 
@@ -66,7 +64,7 @@ public class UserService {
     public void updateExpiredPendingUsers() {
         // Lấy thời gian hiện tại
         LocalDateTime now = LocalDateTime.now();
-
+        LocalDateTime oneHourAgo = now.minusHours(1);
         // Cập nhật isActivated thành false nếu OTP đã hết hạn
         List<PendingUser> expiredUsers = pendingUserRepository.findAllByOtpExpirationTimeBeforeAndIsActivatedTrue(now);
         for (PendingUser user : expiredUsers) {
@@ -75,6 +73,23 @@ public class UserService {
         }
 
         System.out.println("Updated expired pending users at: " + now);
+    }
+    /**
+     * Scheduled task to delete expired OTPs
+     */
+    @Scheduled(fixedRate = 1000) // Chạy mỗi giây
+    @Transactional
+    public void deleteExpiredOTPs() {
+        // Lấy thời gian hiện tại
+        LocalDateTime now = LocalDateTime.now();
+
+        // Xóa OTP hết hạn và lấy số lượng bản ghi bị xóa
+        int deletedCount = authRepository.deleteExpiredOTPs(now);
+
+        // Log số lượng OTP đã xóa
+        if (deletedCount > 0) {
+            System.out.println("Deleted " + deletedCount + " expired OTPs at: " + now);
+        }
     }
 
     /**
@@ -176,7 +191,10 @@ public class UserService {
     }
 
 
-    public Map<String, Object> verifyOtp(String email, String otp) {
+
+
+
+    public Map<String, Object> verifyOtpRegister(String email, String otp) {
         Map<String, Object> response = new HashMap<>();
 
         // Tìm PendingUser bằng email
@@ -244,8 +262,109 @@ public class UserService {
         return response;
     }
 
+    // Kiểm tra xem một chuỗi có phải là email không
+    private boolean isEmail(String identifier) {
+        return identifier != null && identifier.contains("@") && identifier.contains(".");
+    }
+    public ResponseEntity<?> handleForgotPassword(String identifier) {
+        Optional<User> userOptional;
+
+        // Kiểm tra xem identifier có phải là email không
+        if (isEmail(identifier)) {
+            // Nếu là email, tìm user theo email
+            userOptional = userRepository.findByEmail(identifier);
+        } else {
+            // Nếu không phải email, tìm user theo username
+            userOptional = Optional.ofNullable(userRepository.findByUsername(identifier));
+        }
+
+        // Kiểm tra nếu không tìm thấy user
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "status", "error",
+                    "message", "User not found."
+            ));
+        }
+
+        User user = userOptional.get();
+
+        // Tìm hoặc tạo Auth
+        Optional<Auth> existingAuth = authRepository.findByUserEmailAndPurpose(user.getEmail(), "FORGOT_PASSWORD");
+        Auth auth;
+        if (existingAuth.isPresent()) {
+            auth = existingAuth.get();
+            authService.updateOtp(auth); // Ghi đè OTP mới
+        } else {
+            auth = authService.generateOtp(user, "FORGOT_PASSWORD"); // Tạo mới nếu chưa có
+        }
+
+        // Gửi OTP qua email
+        mailService.sendOtp(user.getEmail(), auth.getOtp());
+
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "email", user.getEmail(),
+                "message", "OTP sent to email."
+        ));
+    }
+
+    // Xử lý verify OTP
+    public ResponseEntity<?> handleVerifyOtp(String email, String otp) {
+        Optional<Auth> authOptional = authRepository.findByUserEmailAndOtpAndPurpose(email, otp, "FORGOT_PASSWORD");
+
+        if (authOptional.isEmpty() || authOptional.get().getExpiryTime().isBefore(LocalDateTime.now())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                    "status", "error",
+                    "message", "Invalid or expired OTP."
+            ));
+        }
+
+        Auth auth = authOptional.get();
+        auth.setVerified(true);
+        authRepository.save(auth);
+
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+
+                "message", "OTP verified successfully."
+        ));
+    }
+
+    public Map<String, Object> updatePassword(String email, String newPassword) {
+        Map<String, Object> response = new HashMap<>();
+        Optional<Auth> authOptional = authRepository.findByUserEmailAndPurposeAndIsVerified(email, "FORGOT_PASSWORD", true);
+
+        if (authOptional.isEmpty()) {
+            response.put("status", "error");
+            response.put("message", "Unauthorized or OTP not verified.");
+            return response;
+        }
 
 
+
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            response.put("status", "error");
+            response.put("message", "User not found.");
+            return response;
+        }
+        try {
+            User user = userOptional.get();
+            // Mã hóa mật khẩu mới (nếu sử dụng mã hóa, ví dụ BCrypt)
+
+            user.setPassword(EncryptPassword.encrypt(newPassword));
+            userRepository.save(user); // Lưu user đã được cập nhật
+            authRepository.delete(authOptional.get()); // Xóa dòng Auth tương ứng
+            response.put("status", "success");
+            response.put("message", "Password updated successfully for user with email: " + email);
+
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return response;
+    }
 
 
     // Đăng nhập bằng username
@@ -451,9 +570,6 @@ public class UserService {
         }
         return response;
     }
-
-
-
 
 
 
