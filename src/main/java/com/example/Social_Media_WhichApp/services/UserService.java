@@ -143,15 +143,6 @@ public class UserService {
             ));
             return response;
         }
-
-//<<<<<<< HEAD
-//=======
-//        newUser.setEmail(email);
-//        newUser.setName(name);
-//        newUser.setRole(defaultRole); // Thiết lập vai trò cho người dùng
-//        newUser.setPrivate(false); // Thiết lập cho người dùng trạng thái là public
-//>>>>>>> 249ccebb112faae3b43caf10aeeee0454a8b1328
-
         // Tạo mã OTP
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000);
         LocalDateTime otpExpiry = LocalDateTime.now().plusMinutes(2);
