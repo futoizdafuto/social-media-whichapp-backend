@@ -28,16 +28,22 @@ public class Post {
 
     private Date created_at;
 
+    private Long like_count;
+    private Long comment_count;
     public Post() {
+        this.like_count = 0L;
+        this.comment_count = 0L;
     }
 
-    public Post(Long post_id, User user, String content, List<Media> mediaList, Date created_at) {
+    public Post(Long post_id, User user, String content, List<Media> mediaList, Date created_at, Long like_count, Long comment_count) {
 
         this.post_id = post_id;
         this.user = user;
         this.content = content;
         this.mediaList = mediaList;
         this.created_at = created_at;
+        this.like_count = like_count;
+        this.comment_count = comment_count;
     }
 
 
@@ -80,5 +86,22 @@ public class Post {
     public void setCreated_at(Date created_at) {
         this.created_at = created_at;
     }
+
+    public Long getLike_count() {
+        return like_count;
+    }
+
+    public void setLike_count(Long like_count) {
+        this.like_count = like_count;
+    }
+
+    public Long getComment_count() {
+        return comment_count;
+    }
+
+    public void setComment_count(Long comment_count) {
+        this.comment_count = comment_count;
+    }
 }
+
 
