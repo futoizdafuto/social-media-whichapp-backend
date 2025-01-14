@@ -21,5 +21,6 @@ public interface FollowRepository  extends JpaRepository<Follow, Long> {
     List<Follow> findByFollowed(User followed);
     @Query("SELECT f.follower.username FROM Follow f WHERE f.followed.username = :username AND f.isWaiting = true")
     List<String> findWaitingUsersByFollowedUsername(@Param("username") String username);
+    List<Follow> findByFollowerUsernameAndIsWaitingTrue(String username);
 
 }
