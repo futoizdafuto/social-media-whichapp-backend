@@ -20,19 +20,6 @@ public class ChatController {
     @Autowired
     private MessageService messageService;
 
-    // API gửi tin nhắn 1x1
-    @PostMapping("/sendMessage/User")
-    public ResponseEntity<Message> sendMessageUser(@RequestParam Long receiverId, @RequestBody String content) {
-        Message message = messageService.sendMessageUser(receiverId, content);
-        return new ResponseEntity<>(message, HttpStatus.CREATED);
-    }
-
-    // API gửi tin nhắn trong group
-    @PostMapping("/sendMessage/group")
-    public ResponseEntity<Message> sendGroupMessage(@RequestParam Long groupId, @RequestBody String content) {
-        Message message = messageService.sendMessageGroup(groupId, content);
-        return new ResponseEntity<>(message, HttpStatus.CREATED);
-    }
 
     @PostMapping(value = "/getMessages/user", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, Object>> getMessagesUser(
@@ -92,11 +79,5 @@ public class ChatController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    // API trả lời lại tin nhắn
-    @PostMapping("/replyMessage")
-    public ResponseEntity<Message> replyMessage(@RequestParam Long replyToMessageId, @RequestBody String content) {
-        Message message = messageService.replyMessage(replyToMessageId, content);
-        return new ResponseEntity<>(message, HttpStatus.CREATED);
-    }
 
 }
