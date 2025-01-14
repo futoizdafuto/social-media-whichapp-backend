@@ -1,13 +1,8 @@
 package com.example.Social_Media_WhichApp.services;
 
-import com.example.Social_Media_WhichApp.entity.Post;
-import com.example.Social_Media_WhichApp.entity.PostComment;
-import com.example.Social_Media_WhichApp.entity.PostLike;
-import com.example.Social_Media_WhichApp.entity.User;
-import com.example.Social_Media_WhichApp.repository.PostCommentRepository;
-import com.example.Social_Media_WhichApp.repository.PostLikeRepository;
-import com.example.Social_Media_WhichApp.repository.PostRepository;
-import com.example.Social_Media_WhichApp.repository.UserRepository;
+import com.example.Social_Media_WhichApp.controller.NotificationController;
+import com.example.Social_Media_WhichApp.entity.*;
+import com.example.Social_Media_WhichApp.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -23,16 +18,22 @@ public class PostService {
     private UserRepository userRepository;
     private PostLikeRepository postLikeRepository;
     private PostCommentRepository postCommentRepository;
+    private NotificationRepository notificationRepository;
+
+    @Autowired
+    private NotificationController notificationController;
 
     @Autowired
     public PostService(PostRepository postRepository,
                        UserRepository userRepository,
                        PostLikeRepository postLikeRepository,
-                       PostCommentRepository postCommentRepository) {
+                       PostCommentRepository postCommentRepository,
+                       NotificationRepository notificationRepository) {
         this.postRepository = postRepository;
         this.userRepository = userRepository;
         this.postLikeRepository = postLikeRepository;
         this.postCommentRepository = postCommentRepository;
+        this.notificationRepository = notificationRepository;
     }
 
     public List<Post> getAllPosts(){
@@ -71,7 +72,7 @@ public class PostService {
         postRepository.save(post);
 
         // Tạo thông báo cho chủ sở hữu bài viết
-        //createNotification(post.getUser(), user.getUsername() + " liked your post.");
+        createNotification(post.getUser(), post, user.getUsername() + "\n" + user.getUsername() + " liked your post.");
 
         return "Post liked successfully.";
     }
@@ -102,6 +103,25 @@ public class PostService {
         return "Post unliked successfully.";
     }
 
+    public boolean checkLike(Long postId, Long userId) {
+        Post post = postRepository.findById(postId).orElse(null);
+        User user = userRepository.findById(userId).orElse(null);
+
+        // Kiểm tra xem user đã like post này chưa
+        Optional<PostLike> existingLike = postLikeRepository.findByPostAndUser(post, user);
+        if (!existingLike.isPresent()) {
+            return false;
+        }
+        return true;
+    }
+
+    public long getLikeCount(Long postId) {
+        Post post = postRepository.findById(postId).orElse(null);
+        long count = 0;
+        if(post != null) {count = post.getLike_count();}
+        return count;
+    }
+
     // Thêm bình luận mới cho một bài viết
     public String addComment(Long postId, Long userId, String content) {
         Post post = postRepository.findById(postId).orElse(null);
@@ -119,8 +139,12 @@ public class PostService {
 
         postCommentRepository.save(postComment);
 
+        // Tăng commentCount
+        post.setComment_count(post.getComment_count() + 1);
+        postRepository.save(post);
+
         // Tạo thông báo cho chủ sở hữu bài viết
-        //createNotification(post.getUser(), user.getUsername() + " commented on your post.");
+        createNotification(post.getUser(), post,  user.getUsername() + "\n" + user.getUsername() + " commented on your post.");
 
         return "Comment added successfully.";
     }
@@ -136,5 +160,17 @@ public class PostService {
         return postCommentRepository.findByPost(post);
     }
 
+    private void createNotification(User user,Post post, String message) {
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setPost(post);
+        notification.setMessage(message);
+        notification.setIsread(false);
+        notification.setCreatedAt(new Date());
+        notificationRepository.save(notification);
+
+        // Gửi thông báo qua WebSocket
+        //notificationController.sendNotification(user.getUsername(), message);
+    }
 
 }

@@ -91,6 +91,8 @@ public class PostController {
             postResponse.put("content", post.getContent());
             postResponse.put("mediaList", post.getMediaList());
             postResponse.put("created_at", post.getCreated_at());
+            postResponse.put("like_count", post.getLike_count());
+            postResponse.put("comment_count", post.getComment_count());
 
             // Thêm thông tin User vào response
             if (post.getUser() != null) {
@@ -222,16 +224,44 @@ public class PostController {
     }
 
     @PostMapping("/{postId}/like")
-    public ResponseEntity<String> likePost(@PathVariable Long postId, @RequestParam Long user_id) {
-        String response = postService.likePost(postId, user_id);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Map<String, Object>> likePost(@PathVariable Long postId, @RequestBody Map<String, Object> body) {
+        Long user_id = Long.valueOf(body.get("user_id").toString());
+        String message = postService.likePost(postId, user_id);
+        // Trả về JSON thay vì chuỗi thuần
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("message", message);
+        responseBody.put("like_count", postService.getLikeCount(postId)); // Lấy số lượng like hiện tại
+
+        return ResponseEntity.ok(responseBody);
     }
 
     @PostMapping("/{postId}/unlike")
-    public ResponseEntity<String> unlikePost(@PathVariable Long postId, @RequestParam Long user_id) {
-        String response = postService.unlikePost(postId, user_id);
-        return ResponseEntity.ok(response);
+    public ResponseEntity<Map<String, Object>> unlikePost(@PathVariable Long postId, @RequestBody Map<String, Object> body) {
+        Long user_id = Long.valueOf(body.get("user_id").toString());
+        String message = postService.unlikePost(postId, user_id);
+
+        // Trả về JSON thay vì chuỗi thuần
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("message", message);
+        responseBody.put("like_count", postService.getLikeCount(postId)); // Lấy số lượng like hiện tại
+
+        return ResponseEntity.ok(responseBody);
     }
+
+    @PostMapping("/{postId}/checkLike")
+    public ResponseEntity<Map<String, Object>> checkLikePost(@PathVariable Long postId, @RequestBody Map<String, Object> body) {
+        Long userId = Long.valueOf(body.get("user_id").toString());
+
+        // Gọi service để kiểm tra trạng thái like
+        boolean isLiked = postService.checkLike(postId, userId);
+
+        // Chuẩn bị JSON trả về
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("isLiked", isLiked);
+        System.out.println("Check Like Status: " + isLiked);
+        return ResponseEntity.ok(responseBody);
+    }
+
 
     // Endpoint để thêm bình luận vào bài viết
     @PostMapping("/{postId}/comments")
@@ -251,6 +281,11 @@ public class PostController {
         if (comments == null) {
             return ResponseEntity.notFound().build();
         }
+
+        // Log các bình luận để kiểm tra
+        comments.forEach(comment -> {
+            System.out.println("Comment: " + comment.getContent());
+        });
 
         return ResponseEntity.ok(comments);
     }

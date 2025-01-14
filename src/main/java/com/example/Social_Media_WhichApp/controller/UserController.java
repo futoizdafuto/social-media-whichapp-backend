@@ -1,9 +1,12 @@
 package com.example.Social_Media_WhichApp.controller;
 
+import com.example.Social_Media_WhichApp.entity.Notification;
 import com.example.Social_Media_WhichApp.entity.User;
+import com.example.Social_Media_WhichApp.repository.NotificationRepository;
 import com.example.Social_Media_WhichApp.repository.UserRepository;
 import com.example.Social_Media_WhichApp.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +18,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @Autowired
     private UserService userService;
@@ -52,5 +58,18 @@ public class UserController {
     public Map<String, Object> reLogin(@RequestParam String token) throws Exception {
         return userService.reLogin(token);
     }
+
+    // Endpoint để lấy thông báo của người dùng
+    @GetMapping("/{userId}/notifications")
+    public ResponseEntity<List<Notification>> getUserNotifications(@PathVariable Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        List<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user);
+        return ResponseEntity.ok(notifications);
+    }
+
 
 }
