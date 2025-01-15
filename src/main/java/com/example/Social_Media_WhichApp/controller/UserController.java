@@ -1,5 +1,8 @@
 package com.example.Social_Media_WhichApp.controller;
 
+
+import com.example.Social_Media_WhichApp.entity.Notification;
+import com.example.Social_Media_WhichApp.repository.NotificationRepository;
 import com.example.Social_Media_WhichApp.entity.Auth;
 import com.example.Social_Media_WhichApp.entity.User;
 import com.example.Social_Media_WhichApp.repository.AuthRepository;
@@ -28,6 +31,9 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private NotificationRepository notificationRepository;
 
     @Autowired
     private UserService userService;
@@ -150,6 +156,15 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response); // Trả về 401 Unauthorized nếu lỗi
         }
     }
+      // Endpoint để lấy thông báo của người dùng
+    @GetMapping("/{userId}/notifications")
+    public ResponseEntity<List<Notification>> getUserNotifications(@PathVariable Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
 
+        List<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user);
+        return ResponseEntity.ok(notifications);
 
 }
