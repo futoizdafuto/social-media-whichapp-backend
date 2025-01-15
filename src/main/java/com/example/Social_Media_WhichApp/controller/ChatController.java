@@ -1,6 +1,8 @@
 package com.example.Social_Media_WhichApp.controller;
 
 import com.example.Social_Media_WhichApp.entity.Message;
+import com.example.Social_Media_WhichApp.exception.ForbiddenException;
+import com.example.Social_Media_WhichApp.exception.ResourceNotFoundException;
 import com.example.Social_Media_WhichApp.services.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -79,5 +81,24 @@ public class ChatController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @DeleteMapping("/messages/{messageId}/delete")
+    public ResponseEntity<String> deleteMessage(@PathVariable Long messageId,
+                                                @RequestParam Long userId) {
+        try {
+            String result = messageService.deleteMessage(messageId, userId);
+            return ResponseEntity.ok(result); // Xóa nhóm thành công
+        } catch (
+                ForbiddenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(e.getMessage());
+        } catch (
+                ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body( e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Đã xảy ra lỗi: " + e.getMessage());
+        }
+    }
 
 }

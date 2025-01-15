@@ -19,7 +19,7 @@ public class GroupMember {
     private Long userId; // ID của user tham gia nhóm
 
     @Column(nullable = false)
-    private String role; // Vai trò trong nhóm (chủ nhóm, thành viên)
+    private String role; // Vai trò trong nhóm (member với manager)
 
     @Column(nullable = false)
     private LocalDateTime joinedAt; // Ngày giờ tham gia nhóm

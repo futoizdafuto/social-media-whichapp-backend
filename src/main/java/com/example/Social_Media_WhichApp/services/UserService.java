@@ -377,7 +377,7 @@ public class UserService {
 
                     // Nếu đăng nhập thành công
                     Map<String, Object> userData = new HashMap<>(); // Tạo bản đồ cho dữ liệu người dùng
-                    userData.put("id", user.getUser_id());
+                    userData.put("id", user.getUserId());
                     userData.put("username", user.getUsername());
                     userData.put("email", user.getEmail());
                     userData.put("name", user.getName());
@@ -456,7 +456,7 @@ public class UserService {
             // Token hợp lệ, lấy thông tin người dùng
             User user = token.get().getUser();
             Map<String, Object> userData = new HashMap<>();
-            userData.put("id", user.getUser_id());
+            userData.put("id", user.getUserId());
             userData.put("username", user.getUsername());
             userData.put("email", user.getEmail());
             userData.put("name", user.getName());
@@ -488,7 +488,7 @@ public class UserService {
             tokenRepository.save(newToken);
 
             Map<String, Object> userData = new HashMap<>();
-            userData.put("id", user.getUser_id());
+            userData.put("id", user.getUserId());
             userData.put("username", user.getUsername());
             userData.put("email", user.getEmail());
             userData.put("name", user.getName());
