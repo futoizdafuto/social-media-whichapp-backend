@@ -49,7 +49,8 @@ public class GroupController {
 
     @DeleteMapping("/{groupId}/delete")
     public ResponseEntity<?> deleteGroup(@PathVariable Long groupId,
-                                         @RequestParam Long userId) {
+                                         @RequestBody Map<String, Object> body) {
+        Long userId = Long.valueOf(body.get("userId").toString());
         try {
             String result = groupService.deleteGroup(groupId, userId);
             return ResponseEntity.ok(result); // Xóa nhóm thành công
