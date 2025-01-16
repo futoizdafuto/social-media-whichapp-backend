@@ -24,7 +24,6 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Vô hiệu hóa CSRF theo cách mới
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
                 .authorizeHttpRequests(auth -> auth
 //                        .requestMatchers("/api/users/login", "/api/users/register" , "/uploads/**", "/api/**" , "/api/users/reLogin").permitAll()
                         .requestMatchers("/api/users/login",
@@ -35,7 +34,9 @@ public class SecurityConfig {
                                 "/api/users/forgot_password",
                                 "/api/users/oauth2/google" ,
                                 "/api/users/update_password",
-                                "/uploads/**").permitAll()
+                                "/uploads/**",
+                                "/ws/**",
+                                "/api/conversation/getAllConevrsation").permitAll()
                         // Cho phép truy cập vào đăng nhập, đăng ký
 //                        .requestMatchers("/api/**").permitAll()
 
