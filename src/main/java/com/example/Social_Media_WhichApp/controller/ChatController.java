@@ -90,7 +90,8 @@ public class ChatController {
 // thu ồi tin nhắn
     @DeleteMapping("/messages/{messageId}/delete")
     public ResponseEntity<String> deleteMessage(@PathVariable Long messageId,
-                                                @RequestParam Long userId) {
+                                                @RequestBody Map<String, Object> body) {
+        Long userId = Long.valueOf(body.get("userId").toString());
         try {
             String result = messageService.deleteMessage(messageId, userId);
             return ResponseEntity.ok(result); // Xóa nhóm thành công
