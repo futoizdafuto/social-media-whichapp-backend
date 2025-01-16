@@ -43,66 +43,7 @@ public class GoogleLoginController {
         this.userRepository = userRepository;
     }
 
-//    @GetMapping("/google")
-//    public ResponseEntity<?> loginWithGoogle(@RequestHeader("Authorization") String accessTokenHeader) {
-//        System.out.println("Request received!");
-//
-//        // Lấy Access Token từ header
-//        String accessToken = null;
-//        if (accessTokenHeader != null && accessTokenHeader.startsWith("Bearer ")) {
-//            accessToken = accessTokenHeader.substring(7);
-//        }
-//
-//        if (accessToken == null) {
-//            return ResponseEntity.badRequest().body(Map.of("Login", false, "message", "Access Token is required"));
-//        }
-//
-//        System.out.println("Access Token received: " + accessToken);
-//
-//        try {
-//            // Gọi Google API để xác minh Access Token
-//            String url = "https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=" + accessToken;
-//            RestTemplate restTemplate = new RestTemplate();
-//            Map<String, Object> userInfo = restTemplate.getForObject(url, Map.class);
-//
-//            if (userInfo == null || !userInfo.containsKey("email")) {
-//                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-//                        .body(Map.of("Login", false, "message", "Invalid Access Token"));
-//            }
-//
-//            // Lấy thông tin người dùng từ phản hồi Google
-//            String email = (String) userInfo.get("email");
-//            String name = (String) userInfo.getOrDefault("name", "Unknown");
-//            String avatarUrl = (String) userInfo.getOrDefault("picture", "Unknown");
-//
-//            // Kiểm tra người dùng đã tồn tại hay chưa
-//            User user = userRepository.findByEmail(email).orElseGet(() -> {
-//                User newUser = new User();
-//                newUser.setEmail(email);
-//                newUser.setName(name);
-//                newUser.setAvatar_url(avatarUrl);
-//                newUser.setUsername(email);
-//                userRepository.save(newUser);
-//                return newUser;
-//            });
-//
-//            // Tạo JWT token
-//            String jwt = jwtUtil.generateToken(user.getUsername());
-//
-//            return ResponseEntity.ok(Map.of(
-//                    "Login", true,
-//                    "token", jwt,
-//                    "username", user.getUsername(),
-//                    "email", user.getEmail(),
-//                    "avatar_url", user.getAvatar_url()
-//            ));
-//        } catch (Exception e) {
-//            System.err.println("Error during Google API call: " + e.getMessage());
-//            e.printStackTrace();
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-//                    .body(Map.of("Login", false, "message", "Error verifying Access Token: " + e.getMessage()));
-//        }
-//    }
+
 @GetMapping("/google")
 public ResponseEntity<?> loginWithGoogle(@RequestHeader("Authorization") String accessTokenHeader) {
     System.out.println("Request received!");

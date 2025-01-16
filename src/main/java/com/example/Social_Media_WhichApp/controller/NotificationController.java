@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 @RequestMapping("api/notifications")
 public class NotificationController {
 
+
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
 
@@ -28,6 +29,7 @@ public class NotificationController {
         // Gửi thông báo đến một queue dành riêng cho user
         messagingTemplate.convertAndSendToUser(username, "/queue/notifications", message);
     }
+
 
 }
 

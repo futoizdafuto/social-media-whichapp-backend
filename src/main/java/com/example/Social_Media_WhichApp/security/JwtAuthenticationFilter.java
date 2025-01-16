@@ -41,6 +41,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // Kế th�
             chain.doFilter(request, response); // Cho phép tiếp tục xử lý mà không cần token
             return;
         }
+        if (path.startsWith("/ws")) {
+            chain.doFilter(request, response);
+            return;
+        }
         // Kiểm tra token cho các endpoint khác ngoài login/register
         if (token != null && jwtUtil.validateToken(token)) { // Nếu token không null và hợp lệ
             authenticateUser(token, request); // Xác thực người dùng nếu token hợp lệ
