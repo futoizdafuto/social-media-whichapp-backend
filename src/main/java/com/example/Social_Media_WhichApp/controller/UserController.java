@@ -225,7 +225,7 @@ public class UserController {
                 String fileType = fileName.endsWith(".mp4") ? "video" : "image"; // Xác định kiểu file (có thể bỏ qua nếu chỉ lưu ảnh)
 
                 // Tạo URL của avatar
-                String fileUrl = "https://" + ipAddress + ":8443" + "/uploads/" + getSubRandom();  // Tạo URL với địa chỉ IP và đường dẫn
+                String fileUrl = "https:/" + ipAddress + ":8443" + "/uploads/" + getSubRandom();  // Tạo URL với địa chỉ IP và đường dẫn
                 System.out.println(fileUrl);
                 if (fileUrl != null) {
                     user.setAvatar_url(fileUrl);  // Cập nhật URL avatar cho user
@@ -244,7 +244,7 @@ public class UserController {
         }else {
             // Nếu không upload file avatar, đặt avatar mặc định (nếu cần)
             if (user.getAvatar_url() == null || user.getAvatar_url().isEmpty()) {
-                user.setAvatar_url("https://" + ipAddress + ":8443" + "/uploads/noneavatar.jpg"); // Link ảnh mặc định
+                user.setAvatar_url("https:/" + ipAddress + ":8443" + "/uploads/noneavatar.jpg"); // Link ảnh mặc định
             }
         }
 
@@ -273,6 +273,64 @@ public class UserController {
 
     private String getSubRandom() {
         return fileStorageService.provider_RandomString();  // Đảm bảo hàm này không trả về null
+    }
+    @PostMapping("/banUser")
+    public ResponseEntity<Map<String, Object>> banUser(@RequestParam Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "status", "error",
+                    "message", "User not found"
+            ));
+        }
+
+        // Kiểm tra nếu tài khoản đã bị khóa trước đó
+        if (user.isBanned()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "status", "error",
+                    "message", "User is already banned"
+            ));
+        }
+
+        // Cập nhật trạng thái isBanned thành true
+        user.setBanned(true);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "User has been banned",
+                "userId", userId
+        ));
+    }
+    @PostMapping("/unbanUser")
+    public ResponseEntity<Map<String, Object>> unbanUser(@RequestParam Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "status", "error",
+                    "message", "User not found"
+            ));
+        }
+
+        // Kiểm tra nếu tài khoản chưa bị khóa
+        if (!user.isBanned()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "status", "error",
+                    "message", "User is not banned"
+            ));
+        }
+
+        // Cập nhật trạng thái isBanned thành false
+        user.setBanned(false);
+        userRepository.save(user);
+
+        return ResponseEntity.ok(Map.of(
+                "status", "success",
+                "message", "User has been unbanned",
+                "userId", userId
+        ));
     }
 
 }

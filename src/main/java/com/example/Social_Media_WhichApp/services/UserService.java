@@ -365,52 +365,61 @@ public class UserService {
 
         // Kiểm tra xem người dùng có tồn tại
         if (user != null) {
-            try {
-                // Giải mã mật khẩu đã lưu và kiểm tra xem có khớp với mật khẩu nhập vào không
-                String decryptedPassword = EncryptPassword.decrypt(user.getPassword());
-                if (decryptedPassword.equals(password)) {
-                    // Tạo token cho người dùng
-                    String tokenValue = jwtUtil.generateToken(username);
-                    Token token = new Token(tokenValue, LocalDateTime.now(),
-                            LocalDateTime.now().plusSeconds(jwtUtil.getExpiration()), user);
-                    tokenRepository.save(token);
-
-                    // Nếu đăng nhập thành công
-                    Map<String, Object> userData = new HashMap<>(); // Tạo bản đồ cho dữ liệu người dùng
-                    userData.put("id", user.getUserId());
-                    userData.put("username", user.getUsername());
-                    userData.put("email", user.getEmail());
-                    userData.put("name", user.getName());
-                    userData.put("role", user.getRole().getRole_id());
-                    userData.put("avatar_url", user.getAvatar_url());
-                    userData.put("gender", user.getGender());
-                    userData.put("birthday", user.getBirthday());
-
-                    // Thêm thông tin vào phản hồi
-                    response.put("login", Map.of(
-                            "Login", true,
-                            "status", "success",
-                            "message", "Login successful",
-                            "token", token,
-                            "data", Map.of("user", userData),
-                            "time", LocalDateTime.now()
-                    ));
-                } else {
-                    // Nếu mật khẩu không khớp
-                    response.put("login", Map.of(
-                            "Login", false,
-                            "status", "error",
-                            "password", "error",
-                            "message", "Invalid password"
-                    ));
-                }
-            } catch (Exception e) {
-                // Nếu xảy ra lỗi giải mã
+            if (user.isBanned()) {
+                // Nếu tài khoản bị cấm
                 response.put("login", Map.of(
                         "Login", false,
                         "status", "error",
-                        "message", "Decryption error"
+                        "message", "Your account has been banned."
                 ));
+            } else {
+                try {
+                    // Giải mã mật khẩu đã lưu và kiểm tra xem có khớp với mật khẩu nhập vào không
+                    String decryptedPassword = EncryptPassword.decrypt(user.getPassword());
+                    if (decryptedPassword.equals(password)) {
+                        // Tạo token cho người dùng
+                        String tokenValue = jwtUtil.generateToken(username);
+                        Token token = new Token(tokenValue, LocalDateTime.now(),
+                                LocalDateTime.now().plusSeconds(jwtUtil.getExpiration()), user);
+                        tokenRepository.save(token);
+
+                        // Nếu đăng nhập thành công
+                        Map<String, Object> userData = new HashMap<>(); // Tạo bản đồ cho dữ liệu người dùng
+                        userData.put("id", user.getUserId());
+                        userData.put("username", user.getUsername());
+                        userData.put("email", user.getEmail());
+                        userData.put("name", user.getName());
+                        userData.put("role", user.getRole().getRole_id());
+                        userData.put("avatar_url", user.getAvatar_url());
+                        userData.put("gender", user.getGender());
+                        userData.put("birthday", user.getBirthday());
+
+                        // Thêm thông tin vào phản hồi
+                        response.put("login", Map.of(
+                                "Login", true,
+                                "status", "success",
+                                "message", "Login successful",
+                                "token", token,
+                                "data", Map.of("user", userData),
+                                "time", LocalDateTime.now()
+                        ));
+                    } else {
+                        // Nếu mật khẩu không khớp
+                        response.put("login", Map.of(
+                                "Login", false,
+                                "status", "error",
+                                "password", "error",
+                                "message", "Invalid password"
+                        ));
+                    }
+                } catch (Exception e) {
+                    // Nếu xảy ra lỗi giải mã
+                    response.put("login", Map.of(
+                            "Login", false,
+                            "status", "error",
+                            "message", "Decryption error"
+                    ));
+                }
             }
         } else {
             // Nếu người dùng không tồn tại
