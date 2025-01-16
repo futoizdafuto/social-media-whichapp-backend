@@ -204,7 +204,7 @@ public class PostController {
             }
 
             // Kiểm tra xem có phải chủ post không
-            User currentUser = userService.findUserByUsername(authentication.getName());
+            User currentUser = userService.findUserByUsername(authentication.getNamegit());
             if (!currentUser.getUserId().equals(post.getUser().getUserId()) && (currentUser.getRole().getRole_id() != 1)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("You can only delete your own posts");
