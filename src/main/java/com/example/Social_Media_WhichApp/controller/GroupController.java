@@ -94,7 +94,81 @@ public class GroupController {
 
         return ResponseEntity.ok("Group created successfully with ID: " + group.getId());
     }
+    @PostMapping("/users/groups")
+    public ResponseEntity<Map<String, Object>> getUserGroupsByPost(@RequestParam Long userId) {
+        if (userId == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "User ID is required"
+            ));
+        }
 
+        List<Group> groups = groupMemberRepository.findByUserId(userId).stream()
+                .map(GroupMember::getGroup)
+                .collect(Collectors.toList());
+
+        // Format dữ liệu trả về
+        List<Map<String, Object>> groupData = groups.stream().map(group -> {
+            Map<String, Object> groupInfo = new HashMap<>();
+            groupInfo.put("roomId", group.getId());
+            groupInfo.put("name", group.getName());
+            groupInfo.put("description", group.getDescription());
+            groupInfo.put("avatar", group.getAvatar());
+            groupInfo.put("createdAt", group.getCreatedAt());
+            return groupInfo;
+        }).collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("getUserGroups", Map.of(
+                "data", Map.of("groups", groupData),
+                "status", "success"
+        ));
+        return ResponseEntity.ok(response);
+    }
+
+
+    @PostMapping("/join")
+    public ResponseEntity<Map<String, Object>> joinGroup(@RequestParam Long groupId,
+                                                         @RequestParam Long userId) {
+        if (groupId == null || userId == null) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", "Group ID and User ID are required"
+            ));
+        }
+
+        // Kiểm tra nếu group tồn tại
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new ResourceNotFoundException("Group not found with ID: " + groupId));
+
+        // Kiểm tra nếu user đã tồn tại trong group
+        boolean isAlreadyMember = groupMemberRepository.findByGroupIdAndUserId(groupId, userId).isPresent();
+        if (isAlreadyMember) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of(
+                    "status", "error",
+                    "message", "User is already a member of this group"
+            ));
+        }
+
+        // Thêm user vào group với vai trò member
+        GroupMember groupMember = new GroupMember(group, userId, "member", LocalDateTime.now());
+        groupMemberRepository.save(groupMember);
+
+        // Chuẩn bị dữ liệu trả về
+        Map<String, Object> joinData = new HashMap<>();
+        joinData.put("userId", userId);
+        joinData.put("roomId", groupId);
+        joinData.put("role", "member");
+        joinData.put("joinedAt", groupMember.getJoinedAt());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("joinGroup", Map.of(
+                "data", joinData,
+                "status", "success"
+        ));
+
+        return ResponseEntity.ok(response);
+    }
 
 
 }
