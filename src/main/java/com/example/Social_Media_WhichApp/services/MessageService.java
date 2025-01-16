@@ -24,6 +24,18 @@ public class MessageService {
         return messageRepository.findByRoomId(groupId);
     }
 
+    public Message sendMessageUser(Long senderId, Long receiverId, String content) {
+        // Tạo đối tượng Message
+        Message message = new Message();
+        message.setSenderId(senderId);
+        message.setReceiverId(receiverId);
+        message.setContent(content);
+        message.setReplyToMessageId(null);
+        message.setStatus("SENT"); // Mặc định trạng thái là SENT
+        message.setTimestamp(LocalDateTime.now());
 
+        // Lưu tin nhắn vào cơ sở dữ liệu
+        return messageRepository.save(message);
+    }
 
 }

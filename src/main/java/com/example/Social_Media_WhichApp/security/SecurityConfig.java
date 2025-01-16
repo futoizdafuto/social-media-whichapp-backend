@@ -24,6 +24,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Vô hiệu hóa CSRF theo cách mới
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> auth
 //                        .requestMatchers("/api/users/login", "/api/users/register" , "/uploads/**", "/api/**" , "/api/users/reLogin").permitAll()
                         .requestMatchers("/api/users/login",
