@@ -161,6 +161,30 @@ public class PostController {
             return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+     @PutMapping("/update/{postId}")
+    public ResponseEntity<String> updatePostContent(@PathVariable Long postId,
+                                                    @RequestParam String content) {
+        try {
+            // Kiểm tra post tồn tại
+            Post post = postService.getPostById(postId);
+            if (post == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Post not found");
+            }
+
+            // Cập nhật content
+            post.setContent(content);
+
+            // Lưu vào database
+            postRepository.save(post);
+
+            return ResponseEntity.ok("Post content updated successfully");
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error updating post: " + e.getMessage());
+        }
+    }
 
     @DeleteMapping("/delete/{postId}")
     public ResponseEntity<String> deletePost(@PathVariable Long postId) {
