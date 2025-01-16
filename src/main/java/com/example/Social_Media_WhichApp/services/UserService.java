@@ -56,41 +56,41 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    /**
-     * Scheduled task to update isActivated status for expired OTPs
-     */
-    @Scheduled(fixedRate = 1000) // Chạy mỗi giây
-    @Transactional
-    public void updateExpiredPendingUsers() {
-        // Lấy thời gian hiện tại
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime oneHourAgo = now.minusHours(1);
-        // Cập nhật isActivated thành false nếu OTP đã hết hạn
-        List<PendingUser> expiredUsers = pendingUserRepository.findAllByOtpExpirationTimeBeforeAndIsActivatedTrue(now);
-        for (PendingUser user : expiredUsers) {
-            user.setActivated(false);
-            pendingUserRepository.save(user);
-        }
-
-        System.out.println("Updated expired pending users at: " + now);
-    }
-    /**
-     * Scheduled task to delete expired OTPs
-     */
-    @Scheduled(fixedRate = 1000) // Chạy mỗi giây
-    @Transactional
-    public void deleteExpiredOTPs() {
-        // Lấy thời gian hiện tại
-        LocalDateTime now = LocalDateTime.now();
-
-        // Xóa OTP hết hạn và lấy số lượng bản ghi bị xóa
-        int deletedCount = authRepository.deleteExpiredOTPs(now);
-
-        // Log số lượng OTP đã xóa
-        if (deletedCount > 0) {
-            System.out.println("Deleted " + deletedCount + " expired OTPs at: " + now);
-        }
-    }
+//    /**
+//     * Scheduled task to update isActivated status for expired OTPs
+//     */
+//    @Scheduled(fixedRate = 1000) // Chạy mỗi giây
+//    @Transactional
+//    public void updateExpiredPendingUsers() {
+//        // Lấy thời gian hiện tại
+//        LocalDateTime now = LocalDateTime.now();
+//        LocalDateTime oneHourAgo = now.minusHours(1);
+//        // Cập nhật isActivated thành false nếu OTP đã hết hạn
+//        List<PendingUser> expiredUsers = pendingUserRepository.findAllByOtpExpirationTimeBeforeAndIsActivatedTrue(now);
+//        for (PendingUser user : expiredUsers) {
+//            user.setActivated(false);
+//            pendingUserRepository.save(user);
+//        }
+//
+//        System.out.println("Updated expired pending users at: " + now);
+//    }
+//    /**
+//     * Scheduled task to delete expired OTPs
+//     */
+//    @Scheduled(fixedRate = 1000) // Chạy mỗi giây
+//    @Transactional
+//    public void deleteExpiredOTPs() {
+//        // Lấy thời gian hiện tại
+//        LocalDateTime now = LocalDateTime.now();
+//
+//        // Xóa OTP hết hạn và lấy số lượng bản ghi bị xóa
+//        int deletedCount = authRepository.deleteExpiredOTPs(now);
+//
+//        // Log số lượng OTP đã xóa
+//        if (deletedCount > 0) {
+//            System.out.println("Deleted " + deletedCount + " expired OTPs at: " + now);
+//        }
+//    }
 
     /**
      * Scheduled task to delete pending users older than 1 hour with isActivated = false
