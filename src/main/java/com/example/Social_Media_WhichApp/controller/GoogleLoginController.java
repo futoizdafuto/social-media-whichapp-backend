@@ -95,12 +95,22 @@ public ResponseEntity<?> loginWithGoogle(@RequestHeader("Authorization") String 
         userData.put("name", user.getName());
         userData.put("role", user.getRole().getRole_id());
         userData.put("avatar_url", user.getAvatar_url());
-
+        userData.put("gender", user.getGender());
+        userData.put("birthday", user.getBirthday());
         // Tạo token cho người dùng
         String tokenValue = jwtUtil.generateToken(user.getUsername());
         Token token = new Token(tokenValue, LocalDateTime.now(),
                 LocalDateTime.now().plusSeconds(jwtUtil.getExpiration()), user);
         tokenRepository.save(token);
+        if (user.isBanned()) {
+            // Nếu tài khoản bị cấm
+            return ResponseEntity.ok(Map.of(
+                    "Login", false,
+                    "status", "error",
+                    "message", "Your account has been banned."
+            ));
+        }
+
         return ResponseEntity.ok(Map.of(
                 "Login", true,
                 "data", Map.of("user", userData),
