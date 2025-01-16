@@ -1,6 +1,7 @@
 package com.example.Social_Media_WhichApp.controller;
 
 import com.example.Social_Media_WhichApp.entity.Message;
+import com.example.Social_Media_WhichApp.security.JwtUtil;
 import com.example.Social_Media_WhichApp.exception.ForbiddenException;
 import com.example.Social_Media_WhichApp.exception.ResourceNotFoundException;
 import com.example.Social_Media_WhichApp.services.MessageService;
@@ -8,9 +9,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -21,6 +26,8 @@ import java.util.stream.Collectors;
 public class ChatController {
     @Autowired
     private MessageService messageService;
+    @Autowired
+    private JwtUtil jwtUtil;
 
 
     @PostMapping(value = "/getMessages/user", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

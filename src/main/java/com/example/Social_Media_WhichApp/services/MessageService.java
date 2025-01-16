@@ -27,6 +27,7 @@ public class MessageService {
         return messageRepository.findByRoomId(groupId);
     }
 
+
     public String deleteMessage(Long messageId, Long userId) {
         // Tìm tin nhắn theo ID
         Message message = messageRepository.findById(messageId).orElse(null);
@@ -35,6 +36,7 @@ public class MessageService {
         if (message == null) {
             throw new ResourceNotFoundException("Tin nhắn không tồn tại.");
         }
+
 
         // Kiểm tra xem người yêu cầu có phải là người gửi tin nhắn không
         if (!message.getSenderId().equals(userId)) {
