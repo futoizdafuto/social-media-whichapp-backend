@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -67,5 +68,30 @@ public class GroupService {
         // Xóa nhóm
         groupRepository.delete(group);
         return "Bạn đã xóa thành công nhóm: " + group.getName();
+    }
+     public Group createGroup(String name, String description, String avatar, Long adminUserId, List<Long> userIds) {
+        // Nếu avatar không được cung cấp, sử dụng ảnh mặc định
+        if (avatar == null || avatar.isEmpty()) {
+            avatar = "https://example.com/default-avatar.png";
+        }
+
+        // Tạo đối tượng Group với thời gian hiện tại
+        Group group = new Group(name, description, avatar, LocalDateTime.now());
+
+        // Lưu nhóm mới vào database
+        Group savedGroup = groupRepository.save(group);
+
+        // Tạo thành viên với vai trò "admin"
+        GroupMember adminMember = new GroupMember(savedGroup, adminUserId, "admin", LocalDateTime.now());
+        groupMemberRepository.save(adminMember);
+
+        // Lặp qua danh sách userIds và thêm từng thành viên với vai trò "member"
+        userIds.forEach(userId -> {
+            GroupMember member = new GroupMember(savedGroup, userId, "member", LocalDateTime.now());
+            groupMemberRepository.save(member);
+        });
+
+        // Trả về nhóm đã tạo
+        return savedGroup;
     }
 }
