@@ -34,7 +34,9 @@ public class SecurityConfig {
                                 "/api/users/forgot_password",
                                 "/api/users/oauth2/google" ,
                                 "/api/users/update_password",
-                                "/uploads/**").permitAll()
+                                "/uploads/**",
+                                "/ws/**",
+                                "/api/conversation/getAllConevrsation").permitAll()
                         // Cho phép truy cập vào đăng nhập, đăng ký
 //                        .requestMatchers("/api/**").permitAll()
 

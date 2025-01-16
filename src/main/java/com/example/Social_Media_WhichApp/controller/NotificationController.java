@@ -21,17 +21,13 @@ import java.util.stream.Collectors;
 @RequestMapping("api/notifications")
 public class NotificationController {
 
-//    @Autowired
-//    private SimpMessagingTemplate messagingTemplate;
-//
-//    // Gửi thông báo đến user hiện tại qua WebSocket
-//    public void sendNotification(String username, String message) {
-//        messagingTemplate.convertAndSendToUser(
-//                username,  // Tên user nhận thông báo
-//                "/queue/notifications",  // Đích đến dành riêng
-//                message   // Nội dung thông báo
-//        );
-//    }
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
+
+    public void sendNotification(String username, String message) {
+        // Gửi thông báo đến một queue dành riêng cho user
+        messagingTemplate.convertAndSendToUser(username, "/queue/notifications", message);
+    }
 
 }
 

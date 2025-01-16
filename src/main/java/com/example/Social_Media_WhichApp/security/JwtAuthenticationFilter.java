@@ -69,6 +69,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // Kế th�
                 return; // Ngừng xử lý yêu cầu nếu token không hợp lệ
             }
         }
+        if (path.startsWith("/ws")) {
+            chain.doFilter(request, response);
+            return;
+        }
 
         chain.doFilter(request, response); // Nếu token hợp lệ, tiếp tục xử lý yêu cầu
     }
