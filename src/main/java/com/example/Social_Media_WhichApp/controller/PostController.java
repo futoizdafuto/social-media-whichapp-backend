@@ -96,7 +96,7 @@ public class PostController {
             // Thêm thông tin User vào response
             if (post.getUser() != null) {
                 Map<String, Object> userResponse = new HashMap<>();
-                userResponse.put("user_id", post.getUser().getUser_id());
+                userResponse.put("user_id", post.getUser().getUserId());
                 userResponse.put("username", post.getUser().getUsername());
                 postResponse.put("user", userResponse);
             }
@@ -145,7 +145,7 @@ public class PostController {
 
             // Thêm thông tin của user vào phản hồi
             Map<String, Object> userResponse = new HashMap<>();
-            userResponse.put("user_id", post.getUser().getUser_id());
+            userResponse.put("user_id", post.getUser().getUserId());
             userResponse.put("username", post.getUser().getUsername());  // Nếu có thuộc tính này
 
             response.put("message", "Post created successfully");
@@ -178,7 +178,7 @@ public class PostController {
 
             // Kiểm tra xem có phải chủ post không
             User currentUser = userService.findUserByUsername(authentication.getName());
-            if (!currentUser.getUser_id().equals(post.getUser().getUser_id())) {
+            if (!currentUser.getUserId().equals(post.getUser().getUserId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
                         .body("You can only delete your own posts");
             }
@@ -244,7 +244,7 @@ public class PostController {
             // Thêm thông tin User vào response
             if (post.getUser() != null) {
                 Map<String, Object> userResponse = new HashMap<>();
-                userResponse.put("user_id", post.getUser().getUser_id());
+                userResponse.put("user_id", post.getUser().getUserId());
                 userResponse.put("username", post.getUser().getUsername());
                 postResponse.put("user", userResponse);
             }

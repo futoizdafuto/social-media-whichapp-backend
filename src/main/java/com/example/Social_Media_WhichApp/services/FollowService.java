@@ -22,6 +22,13 @@ public class FollowService {
     @Autowired
     private UserService userService; // Used to check login status
 
+    private final PostService postService;
+
+    public FollowService(PostService postService) {
+        this.postService = postService;
+    }
+    
+
     // Kiểm tra xem người dùng có tồn tại không
     private boolean checkUserExists(String username) {
         return userRepository.findByUsername(username) != null;
@@ -85,6 +92,12 @@ public class FollowService {
             System.out.println("isWaiting: " + follow.isWaiting());
 
             followRepository.save(follow);
+
+            // Tạo thông báo cho chủ sở hữu bài viết
+
+            postService.createNotification(followed, username + "\n" + username + " followed you.");
+            postService.createNotification(follower, targetUsername + "\n" + "You are now following " + targetUsername);
+
 
             response.put("status", "success");
             response.put("message", "You are now following " + targetUsername);

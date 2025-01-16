@@ -14,7 +14,7 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long user_id;
+    private Long userId;
 
     @Column(length = 500)
     private String avatar_url;
@@ -42,11 +42,11 @@ public class User {
     }
 
     public User(Long id) {
-        this.user_id = id;
+        this.userId = id;
     }
 
     public User(Long id, String avatar_url, String username, String password, String email, String name, List<Post> posts, Role role, boolean isPrivate) {
-        this.user_id = id;
+        this.userId = id;
         this.avatar_url = avatar_url;
         this.username = username;
         this.password = password;
@@ -73,12 +73,12 @@ public class User {
         this.isPrivate = isPrivate;
     }
 
-    public Long getUser_id() {
-        return user_id;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUser_id(Long id) {
-        this.user_id = id;
+    public void setUserId(Long id) {
+        this.userId = id;
     }
 
     public String getAvatar_url() {
