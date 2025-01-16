@@ -23,7 +23,6 @@ public class NotificationController {
 
 //    @Autowired
 //    private SimpMessagingTemplate messagingTemplate;
-
 //    // Gửi thông báo đến user hiện tại qua WebSocket
 //    public void sendNotification(String username, String message) {
 //        messagingTemplate.convertAndSendToUser(

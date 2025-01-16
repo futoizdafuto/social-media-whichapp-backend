@@ -1,6 +1,6 @@
 package com.example.Social_Media_WhichApp.services;
 
-import com.example.Social_Media_WhichApp.controller.NotificationController;
+//import com.example.Social_Media_WhichApp.controller.NotificationController;
 import com.example.Social_Media_WhichApp.entity.*;
 import com.example.Social_Media_WhichApp.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,8 +20,8 @@ public class PostService {
     private PostCommentRepository postCommentRepository;
     private NotificationRepository notificationRepository;
 
-    @Autowired
-    private NotificationController notificationController;
+//    @Autowired
+//    private NotificationController notificationController;
 
     @Autowired
     public PostService(PostRepository postRepository,
@@ -34,6 +34,14 @@ public class PostService {
         this.postLikeRepository = postLikeRepository;
         this.postCommentRepository = postCommentRepository;
         this.notificationRepository = notificationRepository;
+    }
+
+    public PostService(NotificationRepository notificationRepository) {
+        this.notificationRepository = notificationRepository;
+    }
+
+    public PostService() {
+
     }
 
     public List<Post> getAllPosts(){
@@ -163,10 +171,23 @@ public class PostService {
         return postCommentRepository.findByPost(post);
     }
 
-    private void createNotification(User user,Post post, String message) {
+     void createNotification(User user,Post post, String message) {
         Notification notification = new Notification();
         notification.setUser(user);
         notification.setPost(post);
+        notification.setMessage(message);
+        notification.setIsread(false);
+        notification.setCreatedAt(new Date());
+        notificationRepository.save(notification);
+
+        // Gửi thông báo qua WebSocket
+        //notificationController.sendNotification(user.getUsername(), message);
+    }
+// thêm phương thức để tạo thông báo không cần đưa post
+    void createNotification(User user, String message) {
+        Notification notification = new Notification();
+        notification.setUser(user);
+        notification.setPost(null);
         notification.setMessage(message);
         notification.setIsread(false);
         notification.setCreatedAt(new Date());

@@ -148,7 +148,7 @@ public ResponseEntity<?> loginWithGoogle(@RequestHeader("Authorization") String 
         });
 
         Map<String, Object> userData = new HashMap<>(); // Tạo bản đồ cho dữ liệu người dùng
-        userData.put("id", user.getUser_id());
+        userData.put("id", user.getUserId());
         userData.put("username", user.getUsername());
         userData.put("email", user.getEmail());
         userData.put("name", user.getName());

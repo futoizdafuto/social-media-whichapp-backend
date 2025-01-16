@@ -166,6 +166,6 @@ public class UserController {
 
         List<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user);
         return ResponseEntity.ok(notifications);
-
+    }
 }
 }

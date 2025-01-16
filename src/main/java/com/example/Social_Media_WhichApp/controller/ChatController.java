@@ -2,6 +2,8 @@ package com.example.Social_Media_WhichApp.controller;
 
 import com.example.Social_Media_WhichApp.entity.Message;
 import com.example.Social_Media_WhichApp.security.JwtUtil;
+import com.example.Social_Media_WhichApp.exception.ForbiddenException;
+import com.example.Social_Media_WhichApp.exception.ResourceNotFoundException;
 import com.example.Social_Media_WhichApp.services.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -86,41 +88,24 @@ public class ChatController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
-    @MessageMapping("/sendMessages/user")
-    @SendTo("/topic/messages")
-    public Map<String, Object> sendMessageUser(Message message, StompHeaderAccessor headerAccessor) {
-        // Lấy token từ header
-        String token = headerAccessor.getFirstNativeHeader("Authorization");
-        if (token == null || !jwtUtil.validateToken(token.replace("Bearer ", ""))) {
-            throw new IllegalArgumentException("Invalid or missing token");
+    @DeleteMapping("/messages/{messageId}/delete")
+    public ResponseEntity<String> deleteMessage(@PathVariable Long messageId,
+                                                @RequestParam Long userId) {
+        try {
+            String result = messageService.deleteMessage(messageId, userId);
+            return ResponseEntity.ok(result); // Xóa nhóm thành công
+        } catch (
+                ForbiddenException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(e.getMessage());
+        } catch (
+                ResourceNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body( e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Đã xảy ra lỗi: " + e.getMessage());
         }
-
-        // Lấy senderId từ token
-        String senderUsername = jwtUtil.getUsernameFromToken(token.replace("Bearer ", ""));
-
-        // Kiểm tra nếu senderId trong request không khớp với token
-        if (!message.getSenderId().equals(senderUsername)) {
-            throw new IllegalArgumentException("Sender ID mismatch");
-        }
-
-        // Xử lý lưu trữ tin nhắn
-        Message savedMessage = messageService.sendMessageUser(
-                message.getSenderId(),
-                message.getReceiverId(),
-                message.getContent()
-        );
-
-        // Tạo dữ liệu tin nhắn gửi đi
-        Map<String, Object> response = new HashMap<>();
-        response.put("messageId", savedMessage.getId());
-        response.put("senderId", savedMessage.getSenderId());
-        response.put("receiverId", savedMessage.getReceiverId());
-        response.put("content", savedMessage.getContent());
-        response.put("timestamp", savedMessage.getTimestamp());
-
-        return response; // Gửi tin nhắn đến topic
     }
-
-
 
 }
