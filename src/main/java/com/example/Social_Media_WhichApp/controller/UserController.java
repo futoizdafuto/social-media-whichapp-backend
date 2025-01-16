@@ -9,6 +9,7 @@ import com.example.Social_Media_WhichApp.repository.AuthRepository;
 import com.example.Social_Media_WhichApp.repository.UserRepository;
 import com.example.Social_Media_WhichApp.security.JwtUtil;
 import com.example.Social_Media_WhichApp.services.AuthService;
+import com.example.Social_Media_WhichApp.services.FileStorageService;
 import com.example.Social_Media_WhichApp.services.MailService;
 import com.example.Social_Media_WhichApp.services.UserService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -20,7 +21,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -45,7 +51,19 @@ public class UserController {
     private MailService mailService;
     @Autowired
     private AuthRepository authRepository;
+    @Autowired
+    private FileStorageService fileStorageService;
+    InetAddress ip;
 
+    {
+        try {
+            ip = InetAddress.getByName(InetAddress.getLocalHost().getHostAddress());
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    String ipAddress = ip.toString();
 
     @GetMapping
     public List<User> getAllUsers() {
@@ -166,6 +184,95 @@ public class UserController {
 
         List<Notification> notifications = notificationRepository.findByUserOrderByCreatedAtDesc(user);
         return ResponseEntity.ok(notifications);
+    }
+    @PostMapping("/update_information")
+    public ResponseEntity<Map<String, Object>> updateInformation(@RequestParam Long userId,
+                                                                 @RequestParam(required = false) String gender,
+                                                                 @RequestParam(required = false) String birthDate,
+                                                                 @RequestParam(required = false) MultipartFile avatarFile) {
+        // Lấy thông tin người dùng theo userId
+        User user = userRepository.findById(userId).orElse(null);
+
+        if (user == null) {
+            // Trả về lỗi nếu user không tồn tại
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                    "status", "error",
+                    "message", "User not found"
+            ));
+        }
+
+        // Cập nhật các thông tin của user nếu được truyền vào
+        if (gender != null) {
+            user.setGender(gender);
+        }
+
+        if (birthDate != null) {
+            try {
+                user.setBirthday(LocalDate.parse(birthDate));  // Chuyển đổi ngày sinh từ string sang LocalDate
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
+                        "status", "error",
+                        "message", "Invalid date format. Please use yyyy-MM-dd."
+                ));
+            }
+        }
+
+        // Cập nhật avatar nếu có file avatarFile
+        if (avatarFile != null && !avatarFile.isEmpty()) {
+            try {
+                // Lưu file avatar và lấy URL (hoặc đường dẫn lưu trữ)
+                String fileName = fileStorageService.save_File(avatarFile);  // Lưu file
+                String fileType = fileName.endsWith(".mp4") ? "video" : "image"; // Xác định kiểu file (có thể bỏ qua nếu chỉ lưu ảnh)
+
+                // Tạo URL của avatar
+                String fileUrl = "https://" + ipAddress + ":8443" + "/uploads/" + getSubRandom();  // Tạo URL với địa chỉ IP và đường dẫn
+                System.out.println(fileUrl);
+                if (fileUrl != null) {
+                    user.setAvatar_url(fileUrl);  // Cập nhật URL avatar cho user
+                } else {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                            "status", "error",
+                            "message", "Failed to generate avatar URL"
+                    ));
+                }
+            } catch (IOException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                        "status", "error",
+                        "message", "Failed to upload avatar: " + e.getMessage()
+                ));
+            }
+        }else {
+            // Nếu không upload file avatar, đặt avatar mặc định (nếu cần)
+            if (user.getAvatar_url() == null || user.getAvatar_url().isEmpty()) {
+                user.setAvatar_url("https://" + ipAddress + ":8443" + "/uploads/noneavatar.jpg"); // Link ảnh mặc định
+            }
+        }
+
+        // Lưu thông tin đã cập nhật vào database
+        userRepository.save(user);
+
+        // Tạo phản hồi trả về
+        Map<String, Object> response = Map.of(
+                "updateInformationUser", Map.of(
+                        "status", "success",
+                        "user", Map.of(
+                                "id", user.getUserId(),
+                                "name", user.getName(),
+                                "email", user.getEmail(),
+                                "role", user.getRole(),
+                                "username", user.getUsername(),
+                                "gender", user.getGender(),
+                                "birthDate", user.getBirthday(),
+                                "avatar", user.getAvatar_url()
+                        )
+                )
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    private String getSubRandom() {
+        return fileStorageService.provider_RandomString();  // Đảm bảo hàm này không trả về null
     }
 
 }

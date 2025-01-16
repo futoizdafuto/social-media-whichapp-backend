@@ -382,7 +382,10 @@ public class UserService {
                     userData.put("email", user.getEmail());
                     userData.put("name", user.getName());
                     userData.put("role", user.getRole().getRole_id());
-                    userData.put("avatar", user.getAvatar_url());
+                    userData.put("avatar_url", user.getAvatar_url());
+                    userData.put("gender", user.getGender());
+                    userData.put("birthday", user.getBirthday());
+
                     // Thêm thông tin vào phản hồi
                     response.put("login", Map.of(
                             "Login", true,
@@ -461,7 +464,9 @@ public class UserService {
             userData.put("email", user.getEmail());
             userData.put("name", user.getName());
             userData.put("role", user.getRole().getRole_id());
-            userData.put("avatar", user.getAvatar_url());
+            userData.put("avatar_url", user.getAvatar_url());
+            userData.put("gender", user.getGender());
+            userData.put("birthday", user.getBirthday());
 
             response.put("status", "success");
             response.put("message", "User is logged in");
@@ -494,6 +499,8 @@ public class UserService {
             userData.put("name", user.getName());
             userData.put("role", user.getRole().getRole_id());
             userData.put("avatar_url", user.getAvatar_url());
+            userData.put("gender", user.getGender());
+            userData.put("birthday", user.getBirthday());
 
             response.put("relogin", Map.of(
                     "Login", true,
