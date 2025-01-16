@@ -87,7 +87,7 @@ public class ChatController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
+// thu ồi tin nhắn
     @DeleteMapping("/messages/{messageId}/delete")
     public ResponseEntity<String> deleteMessage(@PathVariable Long messageId,
                                                 @RequestParam Long userId) {

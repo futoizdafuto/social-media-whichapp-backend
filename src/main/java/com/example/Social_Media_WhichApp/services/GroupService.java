@@ -69,7 +69,8 @@ public class GroupService {
         groupRepository.delete(group);
         return "Bạn đã xóa thành công nhóm: " + group.getName();
     }
-     public Group createGroup(String name, String description, String avatar, Long adminUserId, List<Long> userIds) {
+
+    public Group createGroup(String name, String description, String avatar, Long adminUserId, List<Long> userIds) {
         // Nếu avatar không được cung cấp, sử dụng ảnh mặc định
         if (avatar == null || avatar.isEmpty()) {
             avatar = "https://example.com/default-avatar.png";
