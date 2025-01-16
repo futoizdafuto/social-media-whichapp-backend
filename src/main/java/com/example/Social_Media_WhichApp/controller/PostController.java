@@ -98,6 +98,8 @@ public class PostController {
                 Map<String, Object> userResponse = new HashMap<>();
                 userResponse.put("user_id", post.getUser().getUserId());
                 userResponse.put("username", post.getUser().getUsername());
+                userResponse.put("name", post.getUser().getName());
+                userResponse.put("avatar_url", post.getUser().getAvatar_url());
                 postResponse.put("user", userResponse);
             }
 
@@ -147,6 +149,7 @@ public class PostController {
             Map<String, Object> userResponse = new HashMap<>();
             userResponse.put("user_id", post.getUser().getUserId());
             userResponse.put("username", post.getUser().getUsername());  // Nếu có thuộc tính này
+
 
             response.put("message", "Post created successfully");
             response.put("post", savePost);
