@@ -1,6 +1,7 @@
 package com.example.Social_Media_WhichApp.services;
 
 //import com.example.Social_Media_WhichApp.controller.NotificationController;
+import com.example.Social_Media_WhichApp.controller.NotificationController;
 import com.example.Social_Media_WhichApp.entity.*;
 import com.example.Social_Media_WhichApp.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ public class PostService {
     private PostLikeRepository postLikeRepository;
     private PostCommentRepository postCommentRepository;
     private NotificationRepository notificationRepository;
+    @Autowired
+    private NotificationController notificationController;
 
 //    @Autowired
 //    private NotificationController notificationController;
@@ -194,7 +197,7 @@ public class PostService {
         notificationRepository.save(notification);
 
         // Gửi thông báo qua WebSocket
-        //notificationController.sendNotification(user.getUsername(), message);
+        notificationController.sendNotification(user.getUsername(), message);
     }
 
 }
